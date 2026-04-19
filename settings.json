@@ -1,0 +1,20 @@
+{
+    "language": "fr",
+    "hotkey": "ctrl+space",
+    "scan_directories": [
+        "C:\\Program Files",
+        "C:\\Program Files (x86)"
+    ],
+    "deep_scan_drives": [
+        "C:\\",
+        "D:\\"
+    ],
+    "theme": "dark",
+    "voice_speed": 180,
+    "voice_volume": 0.9,
+    "max_suggestions": 8,
+    "history_size": 50,
+    "log_level": "INFO",
+    "stealth_hotkey": "f9",
+    "gemini_api_key": ""
+}

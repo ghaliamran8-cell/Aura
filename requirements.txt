@@ -1,0 +1,10 @@
+customtkinter
+pyttsx3
+keyboard
+pystray
+Pillow
+pywin32
+SpeechRecognition
+PyAudio
+edge-tts
+pygame

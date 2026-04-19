@@ -1,0 +1,359 @@
+[2026-02-26 19:43:49] INFO — ==================================================
+[2026-02-26 19:43:49] INFO — AURA — Démarrage de l'assistant
+[2026-02-26 19:43:49] INFO — ==================================================
+[2026-02-26 19:43:49] INFO — Langue : fr
+[2026-02-26 19:43:49] INFO — Hotkey : ctrl+space
+[2026-02-26 19:43:50] INFO — Chargement de l'index des applications...
+[2026-02-26 19:43:50] INFO — Démarrage du scan rapide...
+[2026-02-26 19:43:52] INFO — Scan rapide terminé : 493 applications trouvées.
+[2026-02-26 19:43:52] INFO — 493 applications dans l'index.
+[2026-02-26 19:43:52] INFO — Microphone détecté ✓
+[2026-02-26 19:43:53] INFO — Interface Spotlight initialisée.
+[2026-02-26 19:43:53] INFO — Hotkey 'ctrl+space' enregistrée ✓
+[2026-02-26 19:43:53] INFO — AURA est prêt. En attente de commandes...
+[2026-02-26 19:43:53] INFO — Appuyez sur 'ctrl+space' pour ouvrir la barre de recherche.
+[2026-02-26 19:43:53] INFO — Icône system tray créée.
+[2026-02-26 19:43:55] INFO — Voix sélectionnée : Microsoft Hortense Desktop - French
+[2026-02-26 19:44:13] INFO — Écoute activée (fr-FR)...
+[2026-02-26 19:44:19] INFO — STT reconnu : 'ouvre-moi block strap'
+[2026-02-26 19:44:19] INFO — Commande : open | Argument : -moi block strap
+[2026-02-26 19:44:19] INFO — Application lancée : Bloxstrap (C:\Users\PC\AppData\Local\Bloxstrap\Bloxstrap.exe)
+[2026-02-26 19:44:46] INFO — Écoute activée (fr-FR)...
+[2026-02-26 19:44:50] INFO — STT reconnu : 'ouvre-moi dans opéra'
+[2026-02-26 19:44:50] INFO — Commande : open | Argument : -moi dans opéra
+[2026-02-26 19:44:50] INFO — Application lancée : NVIDIA Overlay (C:\Program Files\NVIDIA Corporation\NVIDIA App\CEF\NVIDIA Overlay.exe)
+[2026-02-26 19:44:58] INFO — Commande : open | Argument : -moi dans opéra youtube
+[2026-02-26 19:44:58] INFO — Application lancée : NVIDIA Overlay (C:\Program Files\NVIDIA Corporation\NVIDIA App\CEF\NVIDIA Overlay.exe)
+[2026-02-26 19:45:13] INFO — Écoute activée (fr-FR)...
+[2026-02-26 19:45:16] INFO — STT reconnu : 'opéra'
+[2026-02-26 19:45:16] INFO — Commande : unknown | Argument : opéra
+[2026-02-26 19:45:19] INFO — Écoute activée (fr-FR)...
+[2026-02-26 19:45:22] INFO — STT reconnu : 'ferme opéra'
+[2026-02-26 19:45:22] INFO — Commande : exit | Argument : None
+[2026-02-26 19:45:24] INFO — Fermeture d'AURA...
+[2026-02-26 19:45:24] INFO — AURA fermé.
+[2026-02-26 19:54:55] INFO — ==================================================
+[2026-02-26 19:54:55] INFO — AURA V2 — Démarrage de l'assistant
+[2026-02-26 19:54:55] INFO — ==================================================
+[2026-02-26 19:54:55] INFO — Langue : fr
+[2026-02-26 19:54:55] INFO — Hotkey : ctrl+space
+[2026-02-26 19:54:56] INFO — Chargement de l'index des applications...
+[2026-02-26 19:54:56] INFO — 493 applications dans l'index.
+[2026-02-26 19:54:56] INFO — Microphone détecté ✓
+[2026-02-26 19:54:56] INFO — Interface Spotlight initialisée.
+[2026-02-26 19:54:56] INFO — Hotkey 'ctrl+space' enregistrée ✓
+[2026-02-26 19:54:56] INFO — AURA V2 est prêt.
+[2026-02-26 19:54:56] INFO — Dites 'AURA' suivi d'une commande, ou appuyez sur Ctrl+Espace.
+[2026-02-26 19:54:56] INFO — Icône system tray créée.
+[2026-02-26 19:54:59] INFO — Mode écoute permanente activé. Dites 'AURA' pour donner une commande.
+[2026-02-26 19:54:59] INFO — Thread d'écoute permanente démarré.
+[2026-02-26 19:55:17] INFO — Wake word + commande : 'ouvre-moi bloc strap'
+[2026-02-26 19:55:17] INFO — Commande vocale reçue : 'ouvre-moi bloc strap'
+[2026-02-26 19:55:17] INFO — Commande : open | Argument : -moi bloc strap
+[2026-02-26 19:55:17] ERROR — Erreur edge_tts : [Errno 13] Permission denied: 'C:\\Users\\PC\\AppData\\Local\\Temp\\aura_tts.mp3'
+[2026-02-26 19:55:17] INFO — Application lancée : Bloxstrap (C:\Users\PC\AppData\Local\Bloxstrap\Bloxstrap.exe)
+[2026-02-26 19:55:34] INFO — Wake word + commande : 'fait un bloc strap'
+[2026-02-26 19:55:35] INFO — Commande vocale reçue : 'fait un bloc strap'
+[2026-02-26 19:55:35] INFO — Commande : open | Argument : Bloxstrap
+[2026-02-26 19:55:35] ERROR — Erreur edge_tts : [Errno 13] Permission denied: 'C:\\Users\\PC\\AppData\\Local\\Temp\\aura_tts.mp3'
+[2026-02-26 19:55:35] INFO — Application lancée : Bloxstrap (C:\Users\PC\AppData\Local\Bloxstrap\Bloxstrap.exe)
+[2026-02-26 19:55:51] INFO — Wake word + commande : 'ferme bloc strap'
+[2026-02-26 19:55:51] INFO — Commande vocale reçue : 'ferme bloc strap'
+[2026-02-26 19:55:51] INFO — Commande : close | Argument : bloc strap
+[2026-02-26 19:55:51] INFO — Application fermée : Bloxstrap.exe
+[2026-02-26 19:55:51] ERROR — Erreur edge_tts : [Errno 13] Permission denied: 'C:\\Users\\PC\\AppData\\Local\\Temp\\aura_tts.mp3'
+[2026-02-26 19:56:16] INFO — Wake word + commande : 'ouvre-moi youtube sur opéra'
+[2026-02-26 19:56:17] INFO — Commande vocale reçue : 'ouvre-moi youtube sur opéra'
+[2026-02-26 19:56:17] INFO — Commande : open_website | Argument : https://www.youtube.com
+[2026-02-26 19:56:17] ERROR — Erreur edge_tts : [Errno 13] Permission denied: 'C:\\Users\\PC\\AppData\\Local\\Temp\\aura_tts.mp3'
+[2026-02-26 19:56:17] INFO — Ouverture de https://www.youtube.com (navigateur par défaut)
+[2026-02-26 19:58:06] INFO — Wake word + commande : 'help'
+[2026-02-26 19:58:06] INFO — Commande vocale reçue : 'help'
+[2026-02-26 19:58:06] INFO — Commande : help | Argument : None
+[2026-02-26 19:58:06] ERROR — Erreur edge_tts : [Errno 13] Permission denied: 'C:\\Users\\PC\\AppData\\Local\\Temp\\aura_tts.mp3'
+[2026-02-26 19:58:18] INFO — Wake word + commande : 'cherche'
+[2026-02-26 19:58:19] INFO — Commande vocale reçue : 'cherche'
+[2026-02-26 19:58:19] INFO — Commande : search | Argument : None
+[2026-02-26 19:58:19] ERROR — Erreur edge_tts : [Errno 13] Permission denied: 'C:\\Users\\PC\\AppData\\Local\\Temp\\aura_tts.mp3'
+[2026-02-26 19:58:26] INFO — Wake word + commande : 'cherche'
+[2026-02-26 19:58:26] INFO — Commande vocale reçue : 'cherche'
+[2026-02-26 19:58:26] INFO — Commande : search | Argument : None
+[2026-02-26 19:58:26] ERROR — Erreur edge_tts : [Errno 13] Permission denied: 'C:\\Users\\PC\\AppData\\Local\\Temp\\aura_tts.mp3'
+[2026-02-26 19:58:33] INFO — Wake word + commande : 'quelle heure'
+[2026-02-26 19:58:33] INFO — Commande vocale reçue : 'quelle heure'
+[2026-02-26 19:58:33] INFO — Commande : time | Argument : None
+[2026-02-26 19:58:33] ERROR — Erreur edge_tts : [Errno 13] Permission denied: 'C:\\Users\\PC\\AppData\\Local\\Temp\\aura_tts.mp3'
+[2026-02-26 19:58:45] INFO — Wake word + commande : 'quel jour sommes-nous'
+[2026-02-26 19:58:45] INFO — Commande vocale reçue : 'quel jour sommes-nous'
+[2026-02-26 19:58:45] INFO — Commande : search | Argument : quel jour sommes-nous
+[2026-02-26 19:58:45] ERROR — Erreur edge_tts : [Errno 13] Permission denied: 'C:\\Users\\PC\\AppData\\Local\\Temp\\aura_tts.mp3'
+[2026-02-26 19:58:45] INFO — Recherche internet : 'quel jour sommes-nous'
+[2026-02-26 19:59:03] INFO — Wake word détecté — en attente de commande...
+[2026-02-26 19:59:03] INFO — Écoute active (fr-FR)...
+[2026-02-26 19:59:08] INFO — Écoute active (fr-FR)...
+[2026-02-26 19:59:11] INFO — STT : 'ouvre-moi' (confiance: 93%)
+[2026-02-26 19:59:11] INFO — Commande vocale reçue : 'ouvre-moi'
+[2026-02-26 19:59:11] INFO — STT : 'ouvre-moi' (confiance: 93%)
+[2026-02-26 19:59:11] INFO — Commande : open | Argument : -moi
+[2026-02-26 19:59:11] ERROR — Erreur edge_tts : [Errno 13] Permission denied: 'C:\\Users\\PC\\AppData\\Local\\Temp\\aura_tts.mp3'
+[2026-02-26 19:59:11] INFO — Application lancée : join (C:\Program Files\Git\usr\bin\join.exe)
+[2026-02-26 19:59:11] INFO — Commande : open | Argument : -moi
+[2026-02-26 19:59:11] INFO — Application lancée : join (C:\Program Files\Git\usr\bin\join.exe)
+[2026-02-26 19:59:13] ERROR — Erreur edge_tts : [Errno 13] Permission denied: 'C:\\Users\\PC\\AppData\\Local\\Temp\\aura_tts.mp3'
+[2026-02-26 19:59:15] INFO — Écoute active (fr-FR)...
+[2026-02-26 19:59:20] INFO — STT : 'ouvre-moi Gemini' (confiance: 93%)
+[2026-02-26 19:59:20] INFO — Commande : open_website | Argument : https://gemini.google.com
+[2026-02-26 19:59:20] ERROR — Erreur edge_tts : [Errno 13] Permission denied: 'C:\\Users\\PC\\AppData\\Local\\Temp\\aura_tts.mp3'
+[2026-02-26 19:59:20] INFO — Ouverture de https://gemini.google.com (navigateur par défaut)
+[2026-02-26 19:59:26] INFO — Écoute active (fr-FR)...
+[2026-02-26 19:59:29] INFO — STT : 'aura ferme' (confiance: 93%)
+[2026-02-26 19:59:29] INFO — Commande : search | Argument : aura ferme
+[2026-02-26 19:59:29] ERROR — Erreur edge_tts : [Errno 13] Permission denied: 'C:\\Users\\PC\\AppData\\Local\\Temp\\aura_tts.mp3'
+[2026-02-26 19:59:29] INFO — Recherche internet : 'aura ferme'
+[2026-02-26 19:59:29] INFO — Wake word + commande : 'ferme'
+[2026-02-26 19:59:29] INFO — Commande vocale reçue : 'ferme'
+[2026-02-26 19:59:29] INFO — Commande : close | Argument : None
+[2026-02-26 19:59:32] ERROR — Erreur edge_tts : [Errno 13] Permission denied: 'C:\\Users\\PC\\AppData\\Local\\Temp\\aura_tts.mp3'
+[2026-02-26 19:59:41] INFO — Écoute active (fr-FR)...
+[2026-02-26 19:59:43] INFO — STT : 'ferme YouTube' (confiance: 93%)
+[2026-02-26 19:59:43] INFO — Commande : open_website | Argument : https://www.youtube.com
+[2026-02-26 19:59:43] ERROR — Erreur edge_tts : [Errno 13] Permission denied: 'C:\\Users\\PC\\AppData\\Local\\Temp\\aura_tts.mp3'
+[2026-02-26 19:59:43] INFO — Ouverture de https://www.youtube.com (navigateur par défaut)
+[2026-02-26 19:59:46] INFO — Écoute active (fr-FR)...
+[2026-02-26 19:59:50] INFO — STT : 'ferme YouTube' (confiance: 93%)
+[2026-02-26 19:59:50] INFO — Commande : open_website | Argument : https://www.youtube.com
+[2026-02-26 19:59:50] ERROR — Erreur edge_tts : [Errno 13] Permission denied: 'C:\\Users\\PC\\AppData\\Local\\Temp\\aura_tts.mp3'
+[2026-02-26 19:59:50] INFO — Ouverture de https://www.youtube.com (navigateur par défaut)
+[2026-02-26 19:59:59] INFO — Écoute active (fr-FR)...
+[2026-02-26 20:00:01] INFO — STT : 'ferme opéra' (confiance: 85%)
+[2026-02-26 20:00:01] INFO — Commande : close | Argument : opéra
+[2026-02-26 20:00:02] ERROR — Erreur edge_tts : [Errno 13] Permission denied: 'C:\\Users\\PC\\AppData\\Local\\Temp\\aura_tts.mp3'
+[2026-02-26 20:00:07] INFO — Écoute active (fr-FR)...
+[2026-02-26 20:00:12] INFO — STT : 'si je te confirme que l'application est en cours' (confiance: 93%)
+[2026-02-26 20:00:12] INFO — Commande : search | Argument : si je te confirme que l'application est en cours
+[2026-02-26 20:00:12] ERROR — Erreur edge_tts : [Errno 13] Permission denied: 'C:\\Users\\PC\\AppData\\Local\\Temp\\aura_tts.mp3'
+[2026-02-26 20:00:12] INFO — Recherche internet : 'si je te confirme que l'application est en cours'
+[2026-02-26 20:08:38] INFO — Wake word + commande : 'quelle heure est-il'
+[2026-02-26 20:08:38] INFO — Commande vocale reçue : 'quelle heure est-il'
+[2026-02-26 20:08:39] INFO — Commande : time | Argument : None
+[2026-02-26 20:08:39] ERROR — Erreur edge_tts : [Errno 13] Permission denied: 'C:\\Users\\PC\\AppData\\Local\\Temp\\aura_tts.mp3'
+[2026-02-26 20:08:45] INFO — Wake word + commande : 'quelle heure est-il'
+[2026-02-26 20:08:46] INFO — Commande vocale reçue : 'quelle heure est-il'
+[2026-02-26 20:08:46] INFO — Commande : time | Argument : None
+[2026-02-26 20:08:46] ERROR — Erreur edge_tts : [Errno 13] Permission denied: 'C:\\Users\\PC\\AppData\\Local\\Temp\\aura_tts.mp3'
+[2026-02-26 20:34:16] INFO — ==================================================
+[2026-02-26 20:34:16] INFO — AURA V3 — Mode Discret & IA
+[2026-02-26 20:34:16] INFO — ==================================================
+[2026-02-26 20:36:11] INFO — ==================================================
+[2026-02-26 20:36:11] INFO — AURA V3 — Mode Discret & IA
+[2026-02-26 20:36:11] INFO — ==================================================
+[2026-02-26 20:36:12] INFO — Stealth Hotkey 'f9' prête.
+[2026-02-26 20:36:14] INFO — Mode écoute permanente activé. Dites 'AURA' pour donner une commande.
+[2026-02-26 20:36:14] INFO — Thread d'écoute permanente démarré.
+[2026-02-26 20:36:15] ERROR — Erreur edge_tts : [Errno 13] Permission denied: 'C:\\Users\\PC\\AppData\\Local\\Temp\\aura_tts.mp3'
+[2026-02-26 20:36:28] INFO — Stealth Hotkey activée.
+[2026-02-26 20:36:28] INFO — Écoute active (fr-FR)...
+[2026-02-26 20:36:33] INFO — STT : Aucune parole détectée.
+[2026-02-26 20:36:43] INFO — Sauvegarde des paramètres via SettingsUI...
+[2026-02-26 20:37:07] INFO — Wake word + commande : 'quelle heure est-il'
+[2026-02-26 20:37:07] INFO — Execution -> CMD: time | ARG: None
+[2026-02-26 20:37:07] ERROR — Erreur edge_tts : [Errno 13] Permission denied: 'C:\\Users\\PC\\AppData\\Local\\Temp\\aura_tts.mp3'
+[2026-02-26 20:37:07] INFO — Wake word + commande : 'quelle heure est-il'
+[2026-02-26 20:37:08] INFO — Commande vocale reçue : 'quelle heure est-il'
+[2026-02-26 20:37:08] INFO — Commande : time | Argument : None
+[2026-02-26 20:37:08] ERROR — Erreur edge_tts : [Errno 13] Permission denied: 'C:\\Users\\PC\\AppData\\Local\\Temp\\aura_tts.mp3'
+[2026-02-26 20:37:12] INFO — Stealth Hotkey activée.
+[2026-02-26 20:37:12] INFO — Écoute active (fr-FR)...
+[2026-02-26 20:37:16] INFO — STT : 'aura quelle heure est-il' (confiance: 93%)
+[2026-02-26 20:37:16] INFO — Execution -> CMD: discuss | ARG: aura quelle heure est-il
+[2026-02-26 20:37:16] ERROR — Erreur edge_tts : [Errno 13] Permission denied: 'C:\\Users\\PC\\AppData\\Local\\Temp\\aura_tts.mp3'
+[2026-02-26 20:37:16] INFO — Wake word + commande : 'quelle heure est-il'
+[2026-02-26 20:37:16] INFO — Commande vocale reçue : 'quelle heure est-il'
+[2026-02-26 20:37:16] INFO — Commande : time | Argument : None
+[2026-02-26 20:37:16] ERROR — Erreur edge_tts : [Errno 13] Permission denied: 'C:\\Users\\PC\\AppData\\Local\\Temp\\aura_tts.mp3'
+[2026-02-26 20:37:18] INFO — Wake word + commande : 'quelle heure est-il'
+[2026-02-26 20:37:18] INFO — Execution -> CMD: time | ARG: None
+[2026-02-26 20:37:21] ERROR — Erreur edge_tts : [Errno 13] Permission denied: 'C:\\Users\\PC\\AppData\\Local\\Temp\\aura_tts.mp3'
+[2026-02-26 20:38:56] INFO — Stealth Hotkey activée.
+[2026-02-26 20:38:57] INFO — Écoute active (fr-FR)...
+[2026-02-26 20:39:00] INFO — STT : 'aura quelle heure est-il' (confiance: 93%)
+[2026-02-26 20:39:00] INFO — Execution -> CMD: discuss | ARG: aura quelle heure est-il
+[2026-02-26 20:39:00] ERROR — Erreur edge_tts : [Errno 13] Permission denied: 'C:\\Users\\PC\\AppData\\Local\\Temp\\aura_tts.mp3'
+[2026-02-26 20:39:13] INFO — Wake word + commande : 'ouvre-moi'
+[2026-02-26 20:39:13] INFO — Commande vocale reçue : 'ouvre-moi'
+[2026-02-26 20:39:14] INFO — Commande : open | Argument : -moi
+[2026-02-26 20:39:14] ERROR — Erreur edge_tts : [Errno 13] Permission denied: 'C:\\Users\\PC\\AppData\\Local\\Temp\\aura_tts.mp3'
+[2026-02-26 20:39:14] INFO — Application lancée : join (C:\Program Files\Git\usr\bin\join.exe)
+[2026-02-26 20:39:14] INFO — Wake word + commande : 'ouvre-moi l'application'
+[2026-02-26 20:39:14] INFO — Execution -> CMD: open | ARG: -moi l'application
+[2026-02-26 20:39:14] ERROR — Erreur edge_tts : [Errno 13] Permission denied: 'C:\\Users\\PC\\AppData\\Local\\Temp\\aura_tts.mp3'
+[2026-02-26 20:48:21] INFO — ==================================================
+[2026-02-26 20:48:21] INFO — AURA V3 — Mode Discret & IA
+[2026-02-26 20:48:21] INFO — ==================================================
+[2026-02-26 20:48:21] WARNING — pywin32 non installé — les raccourcis .lnk seront ignorés.
+[2026-02-26 20:48:21] WARNING — edge_tts non installé — fallback sur pyttsx3.
+[2026-02-26 20:50:33] INFO — ==================================================
+[2026-02-26 20:50:33] INFO — AURA V3 — Mode Discret & IA
+[2026-02-26 20:50:33] INFO — ==================================================
+[2026-02-26 20:50:34] WARNING — google-generativeai non installé.
+[2026-02-26 20:50:34] WARNING — Aucun microphone — AURA ne pourra pas vous entendre.
+[2026-02-26 20:50:35] INFO — Stealth Hotkey 'f9' prête.
+[2026-02-26 20:54:22] INFO — ==================================================
+[2026-02-26 20:54:22] INFO — AURA V3 — Mode Discret & IA
+[2026-02-26 20:54:22] INFO — ==================================================
+[2026-02-26 20:54:30] INFO — Stealth Hotkey 'f9' prête.
+[2026-02-26 20:54:31] INFO — Mode écoute permanente activé. Dites 'AURA' pour donner une commande.
+[2026-02-26 20:54:31] INFO — Thread d'écoute permanente démarré.
+[2026-02-26 20:54:32] ERROR — Erreur edge_tts : [Errno 13] Permission denied: 'C:\\Users\\PC\\AppData\\Local\\Temp\\aura_tts.mp3'
+[2026-02-26 20:54:49] INFO — Sauvegarde des paramètres via SettingsUI...
+[2026-02-26 20:55:00] INFO — Stealth Hotkey activée.
+[2026-02-26 20:55:00] INFO — Écoute active (fr-FR)...
+[2026-02-26 20:55:04] INFO — STT : 'quelle heure est-il' (confiance: 93%)
+[2026-02-26 20:55:04] INFO — Execution -> CMD: time | ARG: None
+[2026-02-26 20:55:04] ERROR — Erreur edge_tts : [Errno 13] Permission denied: 'C:\\Users\\PC\\AppData\\Local\\Temp\\aura_tts.mp3'
+[2026-02-26 20:58:41] INFO — Commande : open_website | Argument : https://twitter.com
+[2026-02-26 20:58:41] ERROR — Erreur edge_tts : [Errno 13] Permission denied: 'C:\\Users\\PC\\AppData\\Local\\Temp\\aura_tts.mp3'
+[2026-02-26 20:58:41] INFO — Ouverture de https://twitter.com (navigateur par défaut)
+[2026-02-26 20:58:52] INFO — Commande : open_website | Argument : https://twitter.com
+[2026-02-26 20:58:52] ERROR — Erreur edge_tts : [Errno 13] Permission denied: 'C:\\Users\\PC\\AppData\\Local\\Temp\\aura_tts.mp3'
+[2026-02-26 20:58:52] INFO — Ouverture de https://twitter.com (navigateur par défaut)
+[2026-02-26 20:58:58] INFO — Écoute active (fr-FR)...
+[2026-02-26 20:59:02] INFO — STT : 'ouvre block strap' (confiance: 91%)
+[2026-02-26 20:59:02] INFO — Commande : open | Argument : block strap
+[2026-02-26 20:59:02] ERROR — Erreur edge_tts : [Errno 13] Permission denied: 'C:\\Users\\PC\\AppData\\Local\\Temp\\aura_tts.mp3'
+[2026-02-26 20:59:02] INFO — Application lancée : Bloxstrap (C:\Users\PC\AppData\Local\Bloxstrap\Bloxstrap.exe)
+[2026-02-26 20:59:07] INFO — Écoute active (fr-FR)...
+[2026-02-26 20:59:09] INFO — STT : Parole non reconnue.
+[2026-02-26 20:59:15] INFO — Écoute active (fr-FR)...
+[2026-02-26 20:59:18] INFO — STT : 'ferme YouTube' (confiance: 93%)
+[2026-02-26 20:59:18] INFO — Commande : open_website | Argument : https://www.youtube.com
+[2026-02-26 20:59:18] ERROR — Erreur edge_tts : [Errno 13] Permission denied: 'C:\\Users\\PC\\AppData\\Local\\Temp\\aura_tts.mp3'
+[2026-02-26 20:59:18] INFO — Ouverture de https://www.youtube.com (navigateur par défaut)
+[2026-02-26 21:00:50] INFO — Wake word + commande : 'ouvre-moi spotify'
+[2026-02-26 21:00:50] INFO — Wake word + commande : 'ouvre-moi spotify'
+[2026-02-26 21:00:50] INFO — Wake word + commande : 'ouvre-moi spotify'
+[2026-02-26 21:00:50] INFO — Execution -> CMD: open | ARG: -moi spotify
+[2026-02-26 21:00:50] ERROR — Erreur edge_tts : [Errno 13] Permission denied: 'C:\\Users\\PC\\AppData\\Local\\Temp\\aura_tts.mp3'
+[2026-02-26 21:00:50] INFO — Execution -> CMD: open | ARG: -moi spotify
+[2026-02-26 21:00:50] INFO — Commande vocale reçue : 'ouvre-moi spotify'
+[2026-02-26 21:00:50] ERROR — Erreur edge_tts : [Errno 13] Permission denied: 'C:\\Users\\PC\\AppData\\Local\\Temp\\aura_tts.mp3'
+[2026-02-26 21:00:50] INFO — Commande : open_website | Argument : https://open.spotify.com
+[2026-02-26 21:00:50] ERROR — Erreur edge_tts : [Errno 13] Permission denied: 'C:\\Users\\PC\\AppData\\Local\\Temp\\aura_tts.mp3'
+[2026-02-26 21:00:50] INFO — Ouverture de https://open.spotify.com (navigateur par défaut)
+[2026-02-26 21:01:04] INFO — Stealth Hotkey activée.
+[2026-02-26 21:01:04] INFO — Écoute active (fr-FR)...
+[2026-02-26 21:01:08] INFO — STT : Aucune parole détectée.
+[2026-02-26 21:01:40] INFO — ==================================================
+[2026-02-26 21:01:40] INFO — AURA V3 — Mode Discret & IA
+[2026-02-26 21:01:40] INFO — ==================================================
+[2026-02-26 21:01:42] INFO — Stealth Hotkey 'f9' et UI Hotkey 'ctrl+space+a' prêtes.
+[2026-02-26 21:01:43] INFO — Mode écoute permanente activé. Dites 'AURA' pour donner une commande.
+[2026-02-26 21:01:43] INFO — Thread d'écoute permanente démarré.
+[2026-02-26 21:01:44] ERROR — Erreur edge_tts : [Errno 13] Permission denied: 'C:\\Users\\PC\\AppData\\Local\\Temp\\aura_tts.mp3'
+[2026-02-26 21:02:01] INFO — Sauvegarde des paramètres via SettingsUI...
+[2026-02-26 21:02:08] INFO — UI Hotkey activée.
+[2026-02-26 21:02:09] INFO — UI Hotkey activée.
+[2026-02-26 21:02:26] INFO — Stealth Hotkey activée.
+[2026-02-26 21:02:27] INFO — Écoute active (fr-FR)...
+[2026-02-26 21:02:32] INFO — STT : 'ouvre-moi Spotify' (confiance: 93%)
+[2026-02-26 21:02:32] INFO — Execution -> CMD: open | ARG: -moi spotify
+[2026-02-26 21:02:32] ERROR — Erreur edge_tts : [Errno 13] Permission denied: 'C:\\Users\\PC\\AppData\\Local\\Temp\\aura_tts.mp3'
+[2026-02-26 21:02:36] INFO — Stealth Hotkey activée.
+[2026-02-26 21:02:37] INFO — Écoute active (fr-FR)...
+[2026-02-26 21:02:40] INFO — STT : 'ouvre-moi l'application Spotify' (confiance: 93%)
+[2026-02-26 21:02:40] INFO — Execution -> CMD: open | ARG: -moi l'application spotify
+[2026-02-26 21:02:40] ERROR — Erreur edge_tts : [Errno 13] Permission denied: 'C:\\Users\\PC\\AppData\\Local\\Temp\\aura_tts.mp3'
+[2026-02-26 21:02:45] INFO — Stealth Hotkey activée.
+[2026-02-26 21:02:46] INFO — Écoute active (fr-FR)...
+[2026-02-26 21:02:49] INFO — STT : 'ouvre Spotify ex' (confiance: 83%)
+[2026-02-26 21:02:49] INFO — Execution -> CMD: open | ARG: spotify ex
+[2026-02-26 21:02:49] ERROR — Erreur edge_tts : [Errno 13] Permission denied: 'C:\\Users\\PC\\AppData\\Local\\Temp\\aura_tts.mp3'
+[2026-02-26 21:02:55] INFO — Stealth Hotkey activée.
+[2026-02-26 21:02:55] INFO — Écoute active (fr-FR)...
+[2026-02-26 21:02:58] INFO — STT : 'quelle heure est-il' (confiance: 93%)
+[2026-02-26 21:02:58] INFO — Execution -> CMD: time | ARG: None
+[2026-02-26 21:02:58] ERROR — Erreur edge_tts : [Errno 13] Permission denied: 'C:\\Users\\PC\\AppData\\Local\\Temp\\aura_tts.mp3'
+[2026-02-26 21:03:20] INFO — ==================================================
+[2026-02-26 21:03:20] INFO — AURA V3 — Mode Discret & IA
+[2026-02-26 21:03:20] INFO — ==================================================
+[2026-02-26 21:03:22] INFO — Stealth Hotkey 'f9' et UI Hotkey 'ctrl+space+a' prêtes.
+[2026-02-26 21:03:23] INFO — Mode écoute permanente activé. Dites 'AURA' pour donner une commande.
+[2026-02-26 21:03:23] INFO — Thread d'écoute permanente démarré.
+[2026-02-26 21:03:24] ERROR — Erreur edge_tts : [Errno 13] Permission denied: 'C:\\Users\\PC\\AppData\\Local\\Temp\\aura_tts.mp3'
+[2026-02-26 21:03:34] INFO — Sauvegarde des paramètres via SettingsUI...
+[2026-02-26 21:04:44] INFO — UI Hotkey activée.
+[2026-02-26 21:04:48] INFO — Écoute permanente arrêtée.
+[2026-02-26 21:04:48] INFO — AURA fermé.
+[2026-02-26 21:04:50] INFO — Écoute permanente arrêtée.
+[2026-02-26 21:04:50] INFO — AURA V3 éteint.
+[2026-02-26 21:06:16] INFO — Fermeture totale AURA V3.
+[2026-02-26 21:06:16] INFO — Écoute permanente arrêtée.
+[2026-02-26 21:06:17] INFO — Fermeture totale AURA V3.
+[2026-02-26 21:06:17] INFO — Écoute permanente arrêtée.
+[2026-02-26 21:06:19] INFO — Fermeture totale AURA.
+[2026-02-26 21:06:19] INFO — Écoute permanente arrêtée.
+[2026-02-26 21:07:16] INFO — Fermeture totale AURA V3.
+[2026-02-26 21:07:16] INFO — Écoute permanente arrêtée.
+[2026-02-26 21:07:21] INFO — Stealth Hotkey activée.
+[2026-02-26 21:07:21] INFO — Écoute active (fr-FR)...
+[2026-02-26 21:07:25] INFO — STT : 'ouvre-moi le site' (confiance: 86%)
+[2026-02-26 21:07:25] INFO — Execution -> CMD: open | ARG: -moi le site
+[2026-02-26 21:07:54] INFO — ==================================================
+[2026-02-26 21:07:54] INFO — AURA V3 — Mode Discret & IA
+[2026-02-26 21:07:54] INFO — ==================================================
+[2026-02-26 21:07:56] INFO — Hotkeys prêtes: furtif(f9), UI(ctrl+space+a), config(ctrl+space+s)
+[2026-02-26 21:07:57] INFO — Mode écoute permanente activé. Dites 'AURA' pour donner une commande.
+[2026-02-26 21:07:57] INFO — Thread d'écoute permanente démarré.
+[2026-02-26 21:07:58] ERROR — Erreur edge_tts : [Errno 13] Permission denied: 'C:\\Users\\PC\\AppData\\Local\\Temp\\aura_tts.mp3'
+[2026-02-26 21:08:27] INFO — Sauvegarde des paramètres via SettingsUI...
+[2026-02-26 21:08:54] INFO — Settings Hotkey activée.
+[2026-02-26 21:08:59] INFO — UI Hotkey activée.
+[2026-02-26 21:09:01] INFO — UI Hotkey activée.
+[2026-02-26 21:09:20] INFO — Stealth Hotkey activée.
+[2026-02-26 21:09:20] INFO — Écoute active (fr-FR)...
+[2026-02-26 21:09:23] INFO — STT : 'ouvre Spotify' (confiance: 80%)
+[2026-02-26 21:09:23] INFO — Execution -> CMD: open | ARG: spotify
+[2026-02-26 21:09:23] ERROR — Erreur edge_tts : [Errno 13] Permission denied: 'C:\\Users\\PC\\AppData\\Local\\Temp\\aura_tts.mp3'
+[2026-02-26 21:09:30] INFO — Stealth Hotkey activée.
+[2026-02-26 21:09:30] INFO — Écoute active (fr-FR)...
+[2026-02-26 21:09:34] INFO — STT : 'ouvre Spotify' (confiance: 80%)
+[2026-02-26 21:09:34] INFO — Execution -> CMD: open | ARG: spotify
+[2026-02-26 21:09:34] ERROR — Erreur edge_tts : [Errno 13] Permission denied: 'C:\\Users\\PC\\AppData\\Local\\Temp\\aura_tts.mp3'
+[2026-02-26 21:09:44] INFO — Stealth Hotkey activée.
+[2026-02-26 21:09:44] INFO — Écoute active (fr-FR)...
+[2026-02-26 21:09:47] INFO — STT : 'ouvre Netflix' (confiance: 93%)
+[2026-02-26 21:09:47] INFO — Execution -> CMD: open | ARG: netflix
+[2026-02-26 21:09:47] ERROR — Erreur edge_tts : [Errno 13] Permission denied: 'C:\\Users\\PC\\AppData\\Local\\Temp\\aura_tts.mp3'
+[2026-02-26 21:09:59] INFO — Stealth Hotkey activée.
+[2026-02-26 21:09:59] INFO — Écoute active (fr-FR)...
+[2026-02-26 21:10:03] INFO — STT : 'ouvre Netflix' (confiance: 93%)
+[2026-02-26 21:10:03] INFO — Execution -> CMD: open | ARG: netflix
+[2026-02-26 21:10:03] ERROR — Erreur edge_tts : [Errno 13] Permission denied: 'C:\\Users\\PC\\AppData\\Local\\Temp\\aura_tts.mp3'
+[2026-02-26 21:10:58] INFO — Fermeture totale AURA.
+[2026-02-26 21:10:58] INFO — Écoute permanente arrêtée.
+[2026-02-26 21:10:59] INFO — Settings Hotkey activée.
+[2026-02-26 21:11:05] INFO — UI Hotkey activée.
+[2026-02-26 21:11:07] INFO — Écoute active (fr-FR)...
+[2026-02-26 21:11:10] INFO — STT : 'ouvre mon bloc strap' (confiance: 93%)
+[2026-02-26 21:11:10] INFO — Execution -> CMD: open | ARG: mon bloc strap
+[2026-02-26 21:11:10] ERROR — Erreur edge_tts : [Errno 13] Permission denied: 'C:\\Users\\PC\\AppData\\Local\\Temp\\aura_tts.mp3'
+[2026-02-26 21:11:29] INFO — Écoute active (fr-FR)...
+[2026-02-26 21:11:32] INFO — STT : 'ferme bloc strap' (confiance: 86%)
+[2026-02-26 21:11:32] INFO — Execution -> CMD: close | ARG: bloc strap
+[2026-02-26 21:11:32] ERROR — Erreur edge_tts : [Errno 13] Permission denied: 'C:\\Users\\PC\\AppData\\Local\\Temp\\aura_tts.mp3'
+[2026-02-26 21:11:36] INFO — Écoute active (fr-FR)...
+[2026-02-26 21:11:39] INFO — STT : 'ferme opéra' (confiance: 85%)
+[2026-02-26 21:11:39] INFO — Execution -> CMD: close | ARG: opéra
+[2026-02-26 21:11:39] ERROR — Erreur edge_tts : [Errno 13] Permission denied: 'C:\\Users\\PC\\AppData\\Local\\Temp\\aura_tts.mp3'
+[2026-02-26 21:11:47] INFO — Écoute permanente arrêtée.
+[2026-02-26 21:11:47] INFO — AURA V3 éteint.
+[2026-02-26 21:11:54] INFO — Stealth Hotkey activée.
+[2026-02-26 21:11:54] INFO — Écoute active (fr-FR)...
+[2026-02-26 21:11:57] INFO — STT : 'quelle heure est-il' (confiance: 93%)
+[2026-02-26 21:11:57] INFO — Execution -> CMD: time | ARG: None
+[2026-02-26 21:11:57] ERROR — Erreur edge_tts : [Errno 13] Permission denied: 'C:\\Users\\PC\\AppData\\Local\\Temp\\aura_tts.mp3'
+[2026-02-26 21:12:04] INFO — Stealth Hotkey activée.
+[2026-02-26 21:12:04] INFO — Écoute active (fr-FR)...
+[2026-02-26 21:12:07] INFO — STT : 'quel temps fait-il' (confiance: 93%)
+[2026-02-26 21:12:07] INFO — Execution -> CMD: discuss | ARG: quel temps fait-il
+[2026-02-26 21:12:08] ERROR — Erreur edge_tts : [Errno 13] Permission denied: 'C:\\Users\\PC\\AppData\\Local\\Temp\\aura_tts.mp3'
