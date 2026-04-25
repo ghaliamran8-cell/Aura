@@ -1,12 +1,12 @@
 # =============================================================================
-# voice.py — Module Vocal d'AURA V2 (TTS Neuronal + STT Permanent)
+# voice.py — Module Vocal d'AURA V3 (TTS Neuronal + STT Permanent)
 # =============================================================================
 # Ce module gère :
 # - TTS via edge_tts (voix Microsoft neuronale, très humaine)
 # - STT via SpeechRecognition + Google API
 # - Mode d'écoute PERMANENTE avec mot-clé "AURA" (wake word)
 # - Bip sonore + feedback visuel pour l'écoute
-# - Adaptation bilingue FR/EN automatique
+# - Adaptation multilingue FR/EN automatique avec fallback
 # =============================================================================
 
 import threading
@@ -214,11 +214,23 @@ _recognizer.energy_threshold = 250     # Seuil bas pour capter plus de sons
 _recognizer.pause_threshold = 0.8      # Moins de pause avant fin de capture
 _recognizer.non_speaking_duration = 0.5
 
+# Locales supportées pour le STT (fallback multilingue)
+STT_LOCALES = {
+    "fr": ["fr-FR", "en-US"],  # Essaye FR d'abord, puis EN
+    "en": ["en-US", "fr-FR"],  # Essaye EN d'abord, puis FR
+}
+
 
 def _get_stt_locale() -> str:
-    """Retourne le code de langue pour le STT Google."""
+    """Retourne le code de langue principal pour le STT Google."""
     lang = settings.get("language", "fr")
     return {"fr": "fr-FR", "en": "en-US"}.get(lang, "fr-FR")
+
+
+def _get_stt_fallback_locales() -> list[str]:
+    """Retourne la liste des locales à essayer (principale + fallback)."""
+    lang = settings.get("language", "fr")
+    return STT_LOCALES.get(lang, ["fr-FR", "en-US"])
 
 
 def play_beep() -> None:
@@ -232,10 +244,11 @@ def play_beep() -> None:
 def listen(timeout: int = 5, phrase_time_limit: int = 15) -> str | None:
     """
     Écoute unique : capture le micro → texte.
+    Essaye la langue principale, puis fallback sur la seconde langue.
     Note: le bip est joué par l'appelant, pas ici.
     """
-    locale = _get_stt_locale()
-    logger.info(f"Écoute active ({locale})...")
+    locales = _get_stt_fallback_locales()
+    logger.info(f"Écoute active (locales: {locales})...")
     
     try:
         with sr.Microphone() as source:
@@ -244,31 +257,33 @@ def listen(timeout: int = 5, phrase_time_limit: int = 15) -> str | None:
                 source, timeout=timeout, phrase_time_limit=phrase_time_limit
             )
         
-        # Google STT — essaye de comprendre même si la prononciation est mauvaise
-        # show_all=True donne toutes les alternatives possibles
-        results = _recognizer.recognize_google(audio, language=locale, show_all=True)
+        # Essayer chaque locale (principale puis fallback)
+        for locale in locales:
+            try:
+                results = _recognizer.recognize_google(audio, language=locale, show_all=True)
+                
+                if results and isinstance(results, dict):
+                    alternatives = results.get("alternative", [])
+                    if alternatives:
+                        best = alternatives[0].get("transcript", "")
+                        confidence = alternatives[0].get("confidence", 0)
+                        logger.info(f"STT ({locale}): '{best}' (confiance: {confidence:.0%})")
+                        return best.lower()
+                elif isinstance(results, str):
+                    logger.info(f"STT ({locale}): '{results}'")
+                    return results.lower()
+            except sr.UnknownValueError:
+                logger.debug(f"STT ({locale}): parole non reconnue, essai suivant...")
+                continue
+            except sr.RequestError as e:
+                logger.error(f"STT ({locale}): erreur API — {e}")
+                continue
         
-        if results and isinstance(results, dict):
-            alternatives = results.get("alternative", [])
-            if alternatives:
-                # Prendre la meilleure transcription
-                best = alternatives[0].get("transcript", "")
-                confidence = alternatives[0].get("confidence", 0)
-                logger.info(f"STT : '{best}' (confiance: {confidence:.0%})")
-                return best.lower()
-        elif isinstance(results, str):
-            return results.lower()
-        
+        logger.info("STT : Aucune locale n'a reconnu la parole.")
         return None
     
     except sr.WaitTimeoutError:
         logger.info("STT : Aucune parole détectée.")
-        return None
-    except sr.UnknownValueError:
-        logger.info("STT : Parole non reconnue.")
-        return None
-    except sr.RequestError as e:
-        logger.error(f"STT : Erreur API — {e}")
         return None
     except OSError as e:
         logger.error(f"STT : Erreur micro — {e}")
@@ -295,9 +310,12 @@ _continuous_thread = None
 _command_callback = None
 
 # Variantes du wake word (pour tolérer les erreurs de reconnaissance)
+# Étendu avec plus de variantes françaises et anglaises
 WAKE_WORDS = [
-    "aura", "ora", "aura", "aurora", "or a",
-    "hey aura", "ok aura", "dis aura", "salut aura"
+    "aura", "ora", "aurora", "or a",
+    "hey aura", "ok aura", "dis aura", "salut aura",
+    "hé aura", "eh aura", "aura s'il te plaît",
+    "hi aura", "yo aura", "hey ora",
 ]
 
 
@@ -318,7 +336,7 @@ def _extract_command_after_wake_word(text: str) -> str | None:
     """
     text_lower = text.lower().strip()
     
-    for wake in WAKE_WORDS:
+    for wake in sorted(WAKE_WORDS, key=len, reverse=True):  # Plus long d'abord
         if text_lower.startswith(wake):
             command = text_lower[len(wake):].strip()
             # Nettoyer les connecteurs courants
@@ -343,7 +361,7 @@ def _continuous_listen_worker():
     """
     global _continuous_running
     _continuous_running = True
-    locale = _get_stt_locale()
+    locales = _get_stt_fallback_locales()
     
     logger.info("Mode écoute permanente activé. Dites 'AURA' pour donner une commande.")
     
@@ -358,58 +376,58 @@ def _continuous_listen_worker():
                 except sr.WaitTimeoutError:
                     continue
             
-            # Transcription
-            try:
-                results = _recognizer.recognize_google(
-                    audio, language=locale, show_all=True
-                )
-                
-                text = ""
-                if results and isinstance(results, dict):
-                    alts = results.get("alternative", [])
-                    if alts:
-                        text = alts[0].get("transcript", "")
-                elif isinstance(results, str):
-                    text = results
-                
-                if not text:
+            # Transcription — essayer toutes les locales
+            text = ""
+            for locale in locales:
+                try:
+                    results = _recognizer.recognize_google(
+                        audio, language=locale, show_all=True
+                    )
+                    
+                    if results and isinstance(results, dict):
+                        alts = results.get("alternative", [])
+                        if alts:
+                            text = alts[0].get("transcript", "")
+                            break
+                    elif isinstance(results, str):
+                        text = results
+                        break
+                except sr.UnknownValueError:
+                    continue
+                except sr.RequestError as e:
+                    logger.error(f"Écoute permanente ({locale}) — erreur API : {e}")
                     continue
                 
-                text_lower = text.lower().strip()
-                logger.debug(f"Écoute passive : '{text_lower}'")
-                
-                # Vérifie si le wake word est présent
-                has_wake_word = any(text_lower.startswith(w) or w in text_lower 
-                                   for w in WAKE_WORDS)
-                
-                if has_wake_word:
-                    # Extraire la commande directement après le wake word
-                    command = _extract_command_after_wake_word(text)
-                    
-                    if command:
-                        # Commande incluse dans la phrase !
-                        # Ex: "Aura ouvre Chrome"
-                        logger.info(f"Wake word + commande : '{command}'")
-                        play_beep()
-                        if _command_callback:
-                            _command_callback(command)
-                    else:
-                        # Juste "Aura" → on attend la suite
-                        logger.info("Wake word détecté — en attente de commande...")
-                        play_beep()
-                        
-                        # Écoute dédiée pour la commande
-                        follow_up = listen(timeout=5, phrase_time_limit=15)
-                        if follow_up and _command_callback:
-                            _command_callback(follow_up)
-                
-            except sr.UnknownValueError:
+            if not text:
                 continue
-            except sr.RequestError as e:
-                logger.error(f"Écoute permanente — erreur API : {e}")
-                # Pause pour ne pas spam l'API en cas d'erreur
-                import time
-                time.sleep(3)
+            
+            text_lower = text.lower().strip()
+            logger.debug(f"Écoute passive : '{text_lower}'")
+            
+            # Vérifie si le wake word est présent
+            has_wake_word = any(text_lower.startswith(w) or w in text_lower 
+                               for w in WAKE_WORDS)
+            
+            if has_wake_word:
+                # Extraire la commande directement après le wake word
+                command = _extract_command_after_wake_word(text)
+                
+                if command:
+                    # Commande incluse dans la phrase !
+                    # Ex: "Aura ouvre Chrome"
+                    logger.info(f"Wake word + commande : '{command}'")
+                    play_beep()
+                    if _command_callback:
+                        _command_callback(command)
+                else:
+                    # Juste "Aura" → on attend la suite
+                    logger.info("Wake word détecté — en attente de commande...")
+                    play_beep()
+                    
+                    # Écoute dédiée pour la commande
+                    follow_up = listen(timeout=5, phrase_time_limit=15)
+                    if follow_up and _command_callback:
+                        _command_callback(follow_up)
                 
         except OSError:
             # Micro déconnecté ou problème matériel

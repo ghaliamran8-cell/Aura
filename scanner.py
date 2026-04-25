@@ -7,6 +7,7 @@
 # - La résolution des raccourcis Windows (.lnk)
 # - L'indexation des applications dans index.json
 # - Le compteur de fréquence d'utilisation pour trier les résultats
+# - Cache mémoire + rapidfuzz pour une recherche ultra-rapide
 # =============================================================================
 
 import os
@@ -14,8 +15,19 @@ import json
 import threading
 import time
 from pathlib import Path
-from difflib import SequenceMatcher
 from config import INDEX_FILE, settings, logger
+
+# ---------------------------------------------------------------------------
+# RAPIDFUZZ — Recherche fuzzy ultra-rapide (remplace difflib)
+# ---------------------------------------------------------------------------
+
+try:
+    from rapidfuzz import fuzz, process as rfprocess
+    HAS_RAPIDFUZZ = True
+except ImportError:
+    HAS_RAPIDFUZZ = False
+    from difflib import SequenceMatcher
+    logger.warning("rapidfuzz non installé — fallback sur difflib (plus lent).")
 
 # ---------------------------------------------------------------------------
 # RÉSOLUTION DES RACCOURCIS .LNK (Windows)
@@ -51,6 +63,26 @@ def _resolve_lnk(lnk_path: str) -> str | None:
 # ---------------------------------------------------------------------------
 # DOSSIERS STANDARDS À SCANNER
 # ---------------------------------------------------------------------------
+
+# Dossiers système critiques à NE JAMAIS modifier/exécuter
+DANGEROUS_PATHS = {
+    os.path.normcase(p) for p in [
+        "C:\\Windows\\System32",
+        "C:\\Windows\\SysWOW64",
+        "C:\\Windows\\security",
+        "C:\\Windows\\servicing",
+        "C:\\$Recycle.Bin",
+    ]
+}
+
+def _is_safe_path(path: str) -> bool:
+    """Vérifie qu'un chemin n'est pas dans une zone système critique."""
+    norm = os.path.normcase(path)
+    for dangerous in DANGEROUS_PATHS:
+        if norm.startswith(dangerous):
+            return False
+    return True
+
 
 def _get_standard_directories() -> list[str]:
     """
@@ -118,6 +150,10 @@ def _scan_directory(directory: str, results: dict, max_depth: int = 4) -> None:
             for filename in files:
                 filepath = os.path.join(root, filename)
                 name_lower = filename.lower()
+                
+                # Sécurité : ignorer les fichiers dans des zones dangereuses
+                if not _is_safe_path(filepath):
+                    continue
                 
                 if name_lower.endswith(".exe"):
                     # Ignorer les utilitaires systèmes communs (uninstallers, etc.)
@@ -187,8 +223,15 @@ def deep_scan() -> dict:
     return results
 
 # ---------------------------------------------------------------------------
-# INDEX — Stockage et Chargement
+# INDEX — Stockage, Chargement et CACHE MÉMOIRE
 # ---------------------------------------------------------------------------
+
+# Cache mémoire global — évite de relire index.json à chaque frappe clavier
+_index_cache = None
+_index_cache_lock = threading.Lock()
+# Noms pré-calculés en minuscules pour la recherche
+_search_names_lower = {}
+
 
 def _load_index() -> dict:
     """Charge l'index depuis index.json."""
@@ -210,11 +253,25 @@ def _save_index(data: dict) -> None:
         logger.error(f"Impossible de sauvegarder l'index : {e}")
 
 
+def _refresh_cache(data: dict) -> None:
+    """Met à jour le cache mémoire et les noms pré-calculés."""
+    global _index_cache, _search_names_lower
+    with _index_cache_lock:
+        _index_cache = data
+        _search_names_lower = {name: name.lower() for name in data.get("apps", {})}
+
+
 def get_index() -> dict:
     """
-    Retourne l'index courant des applications.
+    Retourne l'index courant des applications (depuis le cache si possible).
     Si l'index n'existe pas, lance un scan rapide automatiquement.
     """
+    global _index_cache
+    
+    with _index_cache_lock:
+        if _index_cache is not None:
+            return _index_cache
+    
     index = _load_index()
     if not index.get("apps"):
         # Premier lancement : scan rapide automatique
@@ -226,6 +283,8 @@ def get_index() -> dict:
             "scan_type": "quick"
         }
         _save_index(index)
+    
+    _refresh_cache(index)
     return index
 
 
@@ -249,24 +308,26 @@ def update_index(scan_type: str = "quick") -> dict:
         "scan_type": scan_type
     }
     _save_index(new_index)
+    _refresh_cache(new_index)
     return new_index
 
 
 def increment_usage(app_name: str) -> None:
     """Incrémente le compteur d'utilisation d'une application."""
-    index = _load_index()
+    index = get_index()
     usage = index.get("usage_count", {})
     usage[app_name] = usage.get(app_name, 0) + 1
     index["usage_count"] = usage
     _save_index(index)
+    _refresh_cache(index)
 
 # ---------------------------------------------------------------------------
-# RECHERCHE — Fuzzy Search dans l'index
+# RECHERCHE — Fuzzy Search ultra-rapide (rapidfuzz ou fallback difflib)
 # ---------------------------------------------------------------------------
 
 def search_apps(query: str, max_results: int = None) -> list[tuple[str, str, float]]:
     """
-    Recherche une application par nom (fuzzy match).
+    Recherche une application par nom (fuzzy match ultra-rapide).
     
     Retourne une liste de tuples (nom, chemin, score) triée par pertinence.
     Le score combine la similarité textuelle ET la fréquence d'utilisation.
@@ -287,30 +348,54 @@ def search_apps(query: str, max_results: int = None) -> list[tuple[str, str, flo
         return []
     
     scored = []
-    for name, path in apps.items():
-        name_lower = name.lower()
-        
-        # Score de similarité textuelle (0.0 à 1.0)
-        # On teste d'abord la correspondance directe (startswith/contains)
-        if name_lower == query_lower:
-            text_score = 1.0
-        elif name_lower.startswith(query_lower):
-            text_score = 0.9
-        elif query_lower in name_lower:
-            text_score = 0.7
-        else:
-            text_score = SequenceMatcher(None, query_lower, name_lower).ratio()
-        
-        # On ignore les résultats avec un score trop bas
-        if text_score < 0.35:
-            continue
-        
-        # Bonus de fréquence d'utilisation (les apps souvent utilisées remontent)
-        use_count = usage.get(name, 0)
-        freq_bonus = min(use_count * 0.02, 0.15)  # Max +0.15 de bonus
-        
-        final_score = text_score + freq_bonus
-        scored.append((name, path, final_score))
+    
+    if HAS_RAPIDFUZZ:
+        # --- RAPIDFUZZ (ultra-rapide) ---
+        for name, path in apps.items():
+            name_lower = _search_names_lower.get(name, name.lower())
+            
+            # Correspondance directe (priorité maximale)
+            if name_lower == query_lower:
+                text_score = 1.0
+            elif name_lower.startswith(query_lower):
+                text_score = 0.9
+            elif query_lower in name_lower:
+                text_score = 0.7
+            else:
+                # rapidfuzz score (0-100) -> normalize to 0-1
+                text_score = fuzz.ratio(query_lower, name_lower) / 100.0
+            
+            if text_score < 0.35:
+                continue
+            
+            # Bonus de fréquence d'utilisation
+            use_count = usage.get(name, 0)
+            freq_bonus = min(use_count * 0.02, 0.15)
+            
+            final_score = text_score + freq_bonus
+            scored.append((name, path, final_score))
+    else:
+        # --- FALLBACK difflib (plus lent) ---
+        for name, path in apps.items():
+            name_lower = _search_names_lower.get(name, name.lower())
+            
+            if name_lower == query_lower:
+                text_score = 1.0
+            elif name_lower.startswith(query_lower):
+                text_score = 0.9
+            elif query_lower in name_lower:
+                text_score = 0.7
+            else:
+                text_score = SequenceMatcher(None, query_lower, name_lower).ratio()
+            
+            if text_score < 0.35:
+                continue
+            
+            use_count = usage.get(name, 0)
+            freq_bonus = min(use_count * 0.02, 0.15)
+            
+            final_score = text_score + freq_bonus
+            scored.append((name, path, final_score))
     
     # Tri par score décroissant
     scored.sort(key=lambda x: x[2], reverse=True)

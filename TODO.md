@@ -1,6 +1,3 @@
-Enlever le background de aura 
-améliorer l'interface géneral
-ne laisse pas aura retirer des dossiers ou composants sur pc lors d'une commande
 make aura faster (when searching)
 make aura runned with admin access (always)
 make aura translate english in french

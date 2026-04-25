@@ -4,6 +4,7 @@
 # Ce module permet à AURA de comprendre n'importe quelle commande
 # ("Ferme Youtube", "Ouvre la corbeille", "C'est quoi un trou noir")
 # en utilisant Google Gemini 1.5 Flash.
+# Inclut : parsing multilingue, traduction, sécurité LLM.
 # =============================================================================
 
 import json
@@ -50,23 +51,57 @@ def _configure_gemini():
         _is_configured = False
         return False
 
+# --- SÉCURITÉ LLM ---
+SAFETY_INSTRUCTIONS = """
+RÈGLES DE SÉCURITÉ ABSOLUES :
+- Tu ne dois JAMAIS suggérer de commandes qui suppriment des fichiers (del, rm, rmdir)
+- Tu ne dois JAMAIS suggérer de modifier le registre Windows (reg add, reg delete)
+- Tu ne dois JAMAIS suggérer de désactiver le pare-feu, l'antivirus ou la sécurité
+- Tu ne dois JAMAIS donner de commandes qui formatent des disques
+- Tu ne dois JAMAIS encourager l'exécution de scripts téléchargés d'internet
+- Tu ne dois JAMAIS fournir de malware, virus, ou code malveillant
+- En cas de doute sur la sécurité d'une action, REFUSE poliment.
+"""
+
+def _sanitize_llm_response(text: str) -> str:
+    """Nettoie les réponses LLM pour enlever du contenu potentiellement dangereux."""
+    # Supprimer les commandes dangereuses des réponses
+    dangerous_patterns = [
+        r'(?i)del\s+/[sfq]',
+        r'(?i)rmdir\s+/s',
+        r'(?i)format\s+[a-z]:',
+        r'(?i)reg\s+delete',
+        r'(?i)powershell\s+-e\w*\s+',
+    ]
+    import re
+    for pattern in dangerous_patterns:
+        text = re.sub(pattern, '[commande bloquée]', text)
+    return text
+
+
 def parse_with_llm(user_input: str) -> dict:
     """
     Analyse l'intention de l'utilisateur. Retourne un dictionnaire strict :
-    {"intent": "SYSTEM_OPEN"|"SYSTEM_CLOSE"|"WEB_SEARCH"|"ASK_AI"|"UNKNOWN", "target": "chrome"}
+    {"intent": "SYSTEM_OPEN"|"SYSTEM_CLOSE"|"WEB_SEARCH"|"ASK_AI"|"TRANSLATE"|"UNKNOWN", "target": "chrome"}
+    
+    Supporte le français, l'anglais et les langues mixtes.
     """
     if not _is_configured and not _configure_gemini():
         return {"intent": "NO_API_KEY", "target": None}
         
     prompt = f"""
     Tu es le cerveau d'un ordinateur. L'utilisateur te donne un ordre vocal : "{user_input}".
+    L'utilisateur peut parler en FRANÇAIS, ANGLAIS ou MÉLANGER les deux langues.
+    
+    {SAFETY_INSTRUCTIONS}
     
     Catégorise strictement cet ordre dans l'une des intentions suivantes :
-    1. "SYSTEM_OPEN" : Ouvre une application locale ou lance un site (ex: "ouvre chrome", "lance un jeu", "va sur youtube").
-    2. "SYSTEM_CLOSE" : Arrête ou ferme une application logicielle (ex: "ferme discord", "tue le jeu"). Attention: on ne peut pas fermer "youtube" si on ne dit pas de fermer le navigateur entier. Si l'utilisateur demande de fermer un site web, l'intention est "WEB_CLOSE_ERROR".
-    3. "WEB_SEARCH" : Recherche d'une information simple sur internet (ex: "cherche une recette", "comment faire x").
-    4. "ASK_AI" : Question générale, discussion, explication complexe (ex: "c'est quoi un trou noir", "écris moi un code python", "bonjour tu vas bien").
-    5. "UNKNOWN" : Si incompréhensible.
+    1. "SYSTEM_OPEN" : Ouvre une application locale ou lance un site (ex: "ouvre chrome", "lance un jeu", "va sur youtube", "open spotify", "start discord").
+    2. "SYSTEM_CLOSE" : Arrête ou ferme une application logicielle (ex: "ferme discord", "tue le jeu", "close chrome", "kill the game"). Attention: on ne peut pas fermer "youtube" si on ne dit pas de fermer le navigateur entier. Si l'utilisateur demande de fermer un site web, l'intention est "WEB_CLOSE_ERROR".
+    3. "WEB_SEARCH" : Recherche d'une information simple sur internet (ex: "cherche une recette", "comment faire x", "search for python tutorials").
+    4. "TRANSLATE" : Demande de traduction (ex: "traduis bonjour en anglais", "translate hello in french", "comment on dit chat en espagnol").
+    5. "ASK_AI" : Question générale, discussion, explication complexe (ex: "c'est quoi un trou noir", "écris moi un code python", "bonjour tu vas bien", "what is quantum physics").
+    6. "UNKNOWN" : Si incompréhensible.
     
     Renvoie UNIQUEMENT un JSON valide :
     {{
@@ -96,12 +131,17 @@ def discuss_with_llm(user_input: str) -> str:
         "Tu es AURA, une assistante IA vocale omnisciente intégrée à Windows. "
         "Tes réponses sont lues à haute voix, tu DOIS donc être courte, concise, sans markdown (*, ** etc), "
         "sauf si on te demande un code (auquel cas tu dis 'voici le code' et tu le mets). "
-        "Sois professionnelle mais chaleureuse."
+        "Sois professionnelle mais chaleureuse. "
+        "Tu comprends le français, l'anglais, et les mélanges des deux. "
+        "Réponds TOUJOURS dans la langue dans laquelle l'utilisateur te parle. "
+        f"\n{SAFETY_INSTRUCTIONS}"
     )
     
     try:
         response = _model_chat.generate_content(system_instruction + "\n\nQuestion: " + user_input)
         cleaned_text = response.text.replace("*", "").replace("#", "")
+        cleaned_text = _sanitize_llm_response(cleaned_text)
+        
         # Limite de lecture vocale pour ne pas être interminable
         if len(cleaned_text) > 800:
             speak_text = cleaned_text[:800] + "... Je m'arrête là car la réponse est longue."
@@ -114,6 +154,40 @@ def discuss_with_llm(user_input: str) -> str:
     except Exception as e:
         logger.error(f"Erreur LLM Discuss : {e}")
         err = "Désolé, je suis incapable de me connecter à mon cerveau pour le moment."
+        speak(err)
+        return err
+
+def translate_with_llm(user_input: str) -> str:
+    """
+    Traduit du texte via Gemini.
+    Détecte automatiquement la langue source et traduit vers la langue cible.
+    Ex: "bonjour en anglais" → "hello"
+        "hello in french" → "bonjour"
+        "chat en espagnol" → "gato"
+    """
+    if not _is_configured and not _configure_gemini():
+        vocal_error = "Je n'ai pas de clé API pour traduire."
+        speak(vocal_error)
+        return vocal_error
+    
+    system_instruction = (
+        "Tu es un traducteur expert multilingue. "
+        "L'utilisateur va te donner un texte à traduire. "
+        "Détecte automatiquement la langue source et la langue cible demandée. "
+        "Si aucune langue cible n'est précisée, traduis vers l'anglais si le texte est en français, "
+        "ou vers le français si le texte est en anglais, ou vers le français par défaut. "
+        "Réponds uniquement avec la traduction, suivie d'une courte explication entre parenthèses. "
+        "Exemple : 'Hello (anglais → français : Bonjour)'"
+    )
+    
+    try:
+        response = _model_chat.generate_content(system_instruction + "\n\nTexte à traduire : " + user_input)
+        result = response.text.replace("*", "").replace("#", "")
+        speak(result)
+        return result
+    except Exception as e:
+        logger.error(f"Erreur LLM Translate : {e}")
+        err = "Désolé, je n'ai pas pu traduire."
         speak(err)
         return err
 
