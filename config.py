@@ -22,6 +22,9 @@ import sys
 # Dossier d'installation (là où l'exe ou le py se trouve pour les ressources fixes)
 INSTALL_DIR = Path(__file__).parent.resolve()
 
+# Dossier des assets (logo, icon, background)
+ASSETS_DIR = INSTALL_DIR / "assets"
+
 # Dossier de sauvegarde persistante (AppData/Roaming/AURA)
 APP_DATA_DIR = Path(os.getenv("APPDATA")) / "AURA"
 APP_DATA_DIR.mkdir(parents=True, exist_ok=True)
@@ -48,7 +51,7 @@ DEFAULT_SETTINGS = {
         "C:\\Program Files (x86)"
     ],
     "deep_scan_drives": ["C:\\", "D:\\"],
-    "theme": "auto",
+    "theme": "dark",
     "voice_speed": 180,
     "voice_volume": 0.9,
     "max_suggestions": 8,
@@ -56,7 +59,17 @@ DEFAULT_SETTINGS = {
     "log_level": "INFO",
     "autostart": False,
     "stealth_hotkey": "f9",
-    "gemini_api_key": ""
+    "gemini_api_key": "AIzaSyBWYyQAjCl49_-rpjXc1hUFGQStNpxW12I",
+    # --- UI Customization (V3.1) ---
+    "ui_accent_color": "#7C3AED",       # Accent color (hex)
+    "ui_size": "medium",                 # small / medium / large
+    "ui_shape": "pill",                  # pill / rectangle / orb
+    "ui_position": "center",             # center / bottom / top-right / top-left
+    "ui_transparency": 0.92,             # 0.3 → 1.0
+    "ui_font_family": "Segoe UI",        # Font family
+    "ui_font_size": 15,                  # Font size (px)
+    "ui_font_color": "#E8E8E8",          # Font color (hex)
+    "ui_font_style": "normal",           # normal / bold / italic
 }
 
 # ---------------------------------------------------------------------------

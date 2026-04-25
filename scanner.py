@@ -71,7 +71,12 @@ DANGEROUS_PATHS = {
         "C:\\Windows\\SysWOW64",
         "C:\\Windows\\security",
         "C:\\Windows\\servicing",
+        "C:\\Windows\\WinSxS",
+        "C:\\Windows\\Installer",
+        "C:\\Windows\\Temp",
         "C:\\$Recycle.Bin",
+        "C:\\Recovery",
+        "C:\\System Volume Information",
     ]
 }
 
@@ -81,6 +86,9 @@ def _is_safe_path(path: str) -> bool:
     for dangerous in DANGEROUS_PATHS:
         if norm.startswith(dangerous):
             return False
+    # Extra safety: reject paths with suspicious characters
+    if ".." in path or "\0" in path:
+        return False
     return True
 
 
@@ -145,7 +153,8 @@ def _scan_directory(directory: str, results: dict, max_depth: int = 4) -> None:
             
             # Ignorer les dossiers système/cachés courants
             dirs[:] = [d for d in dirs if not d.startswith(('.', '$', '_'))
-                       and d.lower() not in ('cache', 'temp', 'logs', '__pycache__')]
+                       and d.lower() not in ('cache', 'temp', 'logs', '__pycache__',
+                                             'node_modules', '.git', 'backup', 'old')]
             
             for filename in files:
                 filepath = os.path.join(root, filename)
@@ -158,9 +167,14 @@ def _scan_directory(directory: str, results: dict, max_depth: int = 4) -> None:
                 if name_lower.endswith(".exe"):
                     # Ignorer les utilitaires systèmes communs (uninstallers, etc.)
                     skip_keywords = ["unins", "update", "setup", "install", "crash",
-                                     "helper", "service", "daemon", "updater"]
+                                     "helper", "service", "daemon", "updater",
+                                     "repair", "diagnostic", "migrate", "redist"]
                     base = os.path.splitext(filename)[0].lower()
                     if any(kw in base for kw in skip_keywords):
+                        continue
+                    
+                    # Vérifier que le fichier existe vraiment (pas un lien mort)
+                    if not os.path.isfile(filepath):
                         continue
                     
                     # Nom affiché = nom du fichier sans extension, nettoyé
@@ -170,7 +184,7 @@ def _scan_directory(directory: str, results: dict, max_depth: int = 4) -> None:
                 elif name_lower.endswith(".lnk"):
                     # Résolution du raccourci
                     target = _resolve_lnk(filepath)
-                    if target:
+                    if target and os.path.isfile(target):
                         display_name = os.path.splitext(filename)[0]
                         results[display_name] = target
                         
@@ -231,6 +245,8 @@ _index_cache = None
 _index_cache_lock = threading.Lock()
 # Noms pré-calculés en minuscules pour la recherche
 _search_names_lower = {}
+# Noms tokenisés pour recherche rapide par mots-clés
+_search_tokens = {}
 
 
 def _load_index() -> dict:
@@ -255,10 +271,17 @@ def _save_index(data: dict) -> None:
 
 def _refresh_cache(data: dict) -> None:
     """Met à jour le cache mémoire et les noms pré-calculés."""
-    global _index_cache, _search_names_lower
+    global _index_cache, _search_names_lower, _search_tokens
     with _index_cache_lock:
         _index_cache = data
         _search_names_lower = {name: name.lower() for name in data.get("apps", {})}
+        # Pré-tokeniser les noms pour recherche par mots-clés
+        _search_tokens = {}
+        for name in data.get("apps", {}):
+            # Tokenize: split on spaces, hyphens, underscores, dots
+            import re
+            tokens = set(re.split(r'[\s\-_\.]+', name.lower()))
+            _search_tokens[name] = tokens
 
 
 def get_index() -> dict:
@@ -349,24 +372,45 @@ def search_apps(query: str, max_results: int = None) -> list[tuple[str, str, flo
     
     scored = []
     
+    # Pré-tokeniser la requête pour matching par mots-clés
+    import re as _re
+    query_tokens = set(_re.split(r'[\s\-_\.]+', query_lower))
+    
     if HAS_RAPIDFUZZ:
-        # --- RAPIDFUZZ (ultra-rapide) ---
-        for name, path in apps.items():
-            name_lower = _search_names_lower.get(name, name.lower())
+        # --- RAPIDFUZZ BATCH MODE (ultra-rapide) ---
+        # Utiliser process.extract pour scorer tout d'un coup
+        app_names = list(apps.keys())
+        if not app_names:
+            return []
+        
+        # Rapidfuzz batch extraction — beaucoup plus rapide que boucle individuelle
+        batch_results = rfprocess.extract(
+            query_lower,
+            {name: _search_names_lower.get(name, name.lower()) for name in app_names},
+            scorer=fuzz.WRatio,
+            limit=max_results * 3,  # Prendre plus pour pouvoir re-trier
+            score_cutoff=35
+        )
+        
+        for name_lower, rf_score, key in batch_results:
+            name = key
+            path = apps[name]
+            text_score = rf_score / 100.0
             
-            # Correspondance directe (priorité maximale)
-            if name_lower == query_lower:
+            # Bonus pour correspondance exacte ou préfixe
+            nl = _search_names_lower.get(name, name.lower())
+            if nl == query_lower:
                 text_score = 1.0
-            elif name_lower.startswith(query_lower):
-                text_score = 0.9
-            elif query_lower in name_lower:
-                text_score = 0.7
-            else:
-                # rapidfuzz score (0-100) -> normalize to 0-1
-                text_score = fuzz.ratio(query_lower, name_lower) / 100.0
+            elif nl.startswith(query_lower):
+                text_score = max(text_score, 0.92)
+            elif query_lower in nl:
+                text_score = max(text_score, 0.72)
             
-            if text_score < 0.35:
-                continue
+            # Bonus token match (si un mot-clé de la requête correspond exactement)
+            name_tokens = _search_tokens.get(name, set())
+            token_matches = query_tokens & name_tokens
+            if token_matches:
+                text_score = max(text_score, 0.7 + 0.1 * len(token_matches))
             
             # Bonus de fréquence d'utilisation
             use_count = usage.get(name, 0)

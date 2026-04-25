@@ -4,6 +4,7 @@
 # Ce script utilise PyInstaller pour compiler l'application de façon à
 # ce qu'elle puisse être partagée facilement (ex: clé USB, Discord) sans
 # nécessiter l'installation de Python sur l'ordinateur de destination.
+# V3.1: Ajout admin UAC, icône custom, assets embarqués.
 # =============================================================================
 
 import sys
@@ -13,11 +14,8 @@ import shutil
 
 def build_executable():
     print("=" * 60)
-    print("🛠️ LANCEMENT DE LA COMPILATION D'AURA V3 🛠️")
+    print("🛠️ LANCEMENT DE LA COMPILATION D'AURA V3.1 🛠️")
     print("=" * 60)
-    
-    # Vérification que customtkiner, pygame, pyttsx3 sont trouvables par pyinstaller
-    # Normalement pyinstaller s'en sort (surtout avec --collect-all customtkinter)
     
     # 1. Nettoyer les anciens builds
     for folder in ["build", "dist"]:
@@ -29,23 +27,43 @@ def build_executable():
     # pour que l'ami ait sa propre config ! (PyInstaller ne packagera pas settings.json 
     # par dessus, config.py s'occupe de le créer dans AppData ou dossier local)
 
-    # 3. Lancer PyInstaller
-    # --noconfirm : écrase sans faire de pause
-    # --noconsole : lance AURA de manière "invisible" sans la boite noire DOS
-    # --collect-all customtkinter : crucial pour que l'UI fonctionne dans le .exe
+    # 3. Détecter l'icône
+    icon_path = os.path.join("assets", "icon.png")
+    icon_ico = os.path.join("assets", "icon.ico")
+    icon_flag = []
+    
+    if os.path.exists(icon_ico):
+        icon_flag = ["--icon", icon_ico]
+        print(f"[*] Icône trouvée: {icon_ico}")
+    elif os.path.exists(icon_path):
+        # Tenter de convertir PNG -> ICO avec Pillow
+        try:
+            from PIL import Image
+            img = Image.open(icon_path)
+            img.save(icon_ico, format="ICO", sizes=[(256, 256), (128, 128), (64, 64), (32, 32), (16, 16)])
+            icon_flag = ["--icon", icon_ico]
+            print(f"[*] Icône convertie: {icon_path} -> {icon_ico}")
+        except Exception as e:
+            print(f"[!] Impossible de convertir l'icône: {e}")
+    
+    # 4. Lancer PyInstaller
     print("\n[*] Démarrage de Pyinstaller... cela peut prendre quelques minutes.")
     
+    cmd = [
+        sys.executable, "-m", "PyInstaller",
+        "--noconfirm",
+        "--noconsole",
+        "--name=AURA",
+        "--uac-admin",  # Demander les droits administrateur (UAC)
+        "--collect-all", "customtkinter",
+        "--collect-all", "google.generativeai",
+        "--hidden-import", "plyer.platforms.win.notification",
+        "--add-data", "translations.json;.",
+        "--add-data", "assets;assets",
+    ] + icon_flag + ["main.py"]
+    
     try:
-        subprocess.run([
-            sys.executable, "-m", "PyInstaller",
-            "--noconfirm",
-            "--noconsole",
-            "--name=AURA",
-            "--collect-all", "customtkinter",
-            "--collect-all", "google.generativeai",
-            "--hidden-import", "plyer.platforms.win.notification",
-            "main.py"
-        ], check=True)
+        subprocess.run(cmd, check=True)
         
         print("\n" + "=" * 60)
         print("✅ COMPILATION TERMINÉE AVEC SUCCÈS ✅")
@@ -58,6 +76,7 @@ def build_executable():
         print("3. Envoie ce fichier ZIP à ton ami. Il lui suffira de l'extraire et de double-cliquer sur AURA.exe !")
         print("\nNote: Ne lui partage pas ton propre fichier settings.json s'il contient ta clé API,")
         print("chacun doit avoir sa propre clé pour que le service reste gratuit et rapide.\n")
+        print("⚠️ L'application demandera les droits administrateur au lancement (UAC).\n")
 
     except subprocess.CalledProcessError as e:
         print("\n❌ Une erreur est survenue lors de la compilation.")

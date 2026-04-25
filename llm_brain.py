@@ -4,10 +4,11 @@
 # Ce module permet à AURA de comprendre n'importe quelle commande
 # ("Ferme Youtube", "Ouvre la corbeille", "C'est quoi un trou noir")
 # en utilisant Google Gemini 1.5 Flash.
-# Inclut : parsing multilingue, traduction, sécurité LLM.
+# Inclut : parsing multilingue, traduction multi-langue, sécurité LLM.
 # =============================================================================
 
 import json
+import re
 from config import settings, t, logger
 from voice import speak
 
@@ -60,22 +61,37 @@ RÈGLES DE SÉCURITÉ ABSOLUES :
 - Tu ne dois JAMAIS donner de commandes qui formatent des disques
 - Tu ne dois JAMAIS encourager l'exécution de scripts téléchargés d'internet
 - Tu ne dois JAMAIS fournir de malware, virus, ou code malveillant
+- Tu ne dois JAMAIS exécuter de commandes PowerShell encodées ou obfusquées
+- Tu ne dois JAMAIS modifier les fichiers de démarrage du système (boot, MBR, GPT)
 - En cas de doute sur la sécurité d'une action, REFUSE poliment.
 """
 
+# Patterns dangereux à bloquer dans les réponses LLM
+_DANGEROUS_PATTERNS = [
+    r'(?i)del\s+/[sfq]',
+    r'(?i)rmdir\s+/s',
+    r'(?i)format\s+[a-z]:',
+    r'(?i)reg\s+delete',
+    r'(?i)reg\s+add',
+    r'(?i)powershell\s+-e\w*\s+',
+    r'(?i)powershell\s+-enc',
+    r'(?i)cmd\s+/c\s+del',
+    r'(?i)cmd\s+/c\s+format',
+    r'(?i)rm\s+-rf',
+    r'(?i)mkfs\.',
+    r'(?i)dd\s+if=',
+    r'(?i)bcdedit',
+    r'(?i)diskpart',
+    r'(?i)cipher\s+/w',
+    r'(?i)net\s+stop\s+',
+    r'(?i)sc\s+delete\s+',
+    r'(?i)wmic\s+.*delete',
+]
+
 def _sanitize_llm_response(text: str) -> str:
     """Nettoie les réponses LLM pour enlever du contenu potentiellement dangereux."""
-    # Supprimer les commandes dangereuses des réponses
-    dangerous_patterns = [
-        r'(?i)del\s+/[sfq]',
-        r'(?i)rmdir\s+/s',
-        r'(?i)format\s+[a-z]:',
-        r'(?i)reg\s+delete',
-        r'(?i)powershell\s+-e\w*\s+',
-    ]
-    import re
-    for pattern in dangerous_patterns:
-        text = re.sub(pattern, '[commande bloquée]', text)
+    for pattern in _DANGEROUS_PATTERNS:
+        text = re.sub(pattern, '[commande bloquée pour sécurité]', text)
     return text
 
 
@@ -99,7 +115,7 @@ def parse_with_llm(user_input: str) -> dict:
     1. "SYSTEM_OPEN" : Ouvre une application locale ou lance un site (ex: "ouvre chrome", "lance un jeu", "va sur youtube", "open spotify", "start discord").
     2. "SYSTEM_CLOSE" : Arrête ou ferme une application logicielle (ex: "ferme discord", "tue le jeu", "close chrome", "kill the game"). Attention: on ne peut pas fermer "youtube" si on ne dit pas de fermer le navigateur entier. Si l'utilisateur demande de fermer un site web, l'intention est "WEB_CLOSE_ERROR".
     3. "WEB_SEARCH" : Recherche d'une information simple sur internet (ex: "cherche une recette", "comment faire x", "search for python tutorials").
-    4. "TRANSLATE" : Demande de traduction (ex: "traduis bonjour en anglais", "translate hello in french", "comment on dit chat en espagnol").
+    4. "TRANSLATE" : Demande de traduction (ex: "traduis bonjour en anglais", "translate hello in french", "comment on dit chat en espagnol", "dis-moi comment dire merci en japonais").
     5. "ASK_AI" : Question générale, discussion, explication complexe (ex: "c'est quoi un trou noir", "écris moi un code python", "bonjour tu vas bien", "what is quantum physics").
     6. "UNKNOWN" : Si incompréhensible.
     
@@ -132,7 +148,8 @@ def discuss_with_llm(user_input: str) -> str:
         "Tes réponses sont lues à haute voix, tu DOIS donc être courte, concise, sans markdown (*, ** etc), "
         "sauf si on te demande un code (auquel cas tu dis 'voici le code' et tu le mets). "
         "Sois professionnelle mais chaleureuse. "
-        "Tu comprends le français, l'anglais, et les mélanges des deux. "
+        "Tu comprends le français, l'anglais, l'espagnol, l'arabe, l'allemand, le japonais, "
+        "le chinois, le portugais, l'italien, le russe et toutes les autres langues. "
         "Réponds TOUJOURS dans la langue dans laquelle l'utilisateur te parle. "
         f"\n{SAFETY_INSTRUCTIONS}"
     )
@@ -161,9 +178,14 @@ def translate_with_llm(user_input: str) -> str:
     """
     Traduit du texte via Gemini.
     Détecte automatiquement la langue source et traduit vers la langue cible.
-    Ex: "bonjour en anglais" → "hello"
+    Supporte TOUTES les langues (pas seulement FR/EN).
+    
+    Exemples :
+        "bonjour en anglais" → "hello"
         "hello in french" → "bonjour"
         "chat en espagnol" → "gato"
+        "merci en japonais" → "ありがとう (arigatō)"
+        "I love you en arabe" → "أحبك (uhibbuk)"
     """
     if not _is_configured and not _configure_gemini():
         vocal_error = "Je n'ai pas de clé API pour traduire."
@@ -171,18 +193,24 @@ def translate_with_llm(user_input: str) -> str:
         return vocal_error
     
     system_instruction = (
-        "Tu es un traducteur expert multilingue. "
+        "Tu es un traducteur expert multilingue professionnel. "
+        "Tu maîtrises TOUTES les langues du monde : français, anglais, espagnol, arabe, "
+        "allemand, italien, portugais, russe, japonais, chinois (mandarin), coréen, "
+        "hindi, turc, néerlandais, polonais, suédois, et toute autre langue. "
         "L'utilisateur va te donner un texte à traduire. "
         "Détecte automatiquement la langue source et la langue cible demandée. "
         "Si aucune langue cible n'est précisée, traduis vers l'anglais si le texte est en français, "
         "ou vers le français si le texte est en anglais, ou vers le français par défaut. "
         "Réponds uniquement avec la traduction, suivie d'une courte explication entre parenthèses. "
-        "Exemple : 'Hello (anglais → français : Bonjour)'"
+        "Si la langue cible utilise un alphabet non-latin, ajoute la translittération. "
+        "Exemple : 'Hello (anglais → français : Bonjour)' "
+        "Exemple : 'ありがとう / arigatō (français → japonais : Merci)'"
     )
     
     try:
         response = _model_chat.generate_content(system_instruction + "\n\nTexte à traduire : " + user_input)
         result = response.text.replace("*", "").replace("#", "")
+        result = _sanitize_llm_response(result)
         speak(result)
         return result
     except Exception as e:

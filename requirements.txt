@@ -8,3 +8,6 @@ SpeechRecognition
 PyAudio
 edge-tts
 pygame
+rapidfuzz
+google-generativeai
+psutil

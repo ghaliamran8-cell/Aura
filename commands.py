@@ -31,30 +31,55 @@ DANGEROUS_COMMANDS = [
     "net stop", "net user", "bcdedit", "diskpart", "cipher /w",
     "powershell -e", "powershell -enc", "cmd /c del", "cmd /c format",
     "rm -rf", "mkfs", "dd if=",
+    # Nouvelles protections V3.1
+    "wmic", "sc delete", "takeown", "icacls",
+    "attrib -s -h", "reg save", "reg restore",
+    "vssadmin delete", "wbadmin delete",
+    "schtasks /delete", "net localgroup",
+    "compact /u", "cipher /e",
 ]
 
 DANGEROUS_APPS_TO_CLOSE = [
     "explorer", "svchost", "csrss", "winlogon", "lsass",
     "services", "smss", "wininit", "system", "dwm",
+    "conhost", "ntoskrnl", "audiodg", "fontdrvhost",
+    "registry", "memory compression", "secure system",
 ]
 
 def _is_dangerous_command(text: str) -> bool:
     """Vérifie si une commande est dangereuse pour le système."""
     text_lower = text.lower().strip()
-    return any(cmd in text_lower for cmd in DANGEROUS_COMMANDS)
+    if any(cmd in text_lower for cmd in DANGEROUS_COMMANDS):
+        return True
+    # Vérifier les patterns de traversée de chemin
+    if "..\\" in text_lower or "../" in text_lower:
+        return True
+    # Vérifier les encodages suspects
+    if re.search(r'(?i)(base64|encoded|obfuscated)', text_lower):
+        return True
+    return False
 
 def _is_safe_to_close(app_name: str) -> bool:
     """Vérifie qu'on ne tente pas de fermer un processus système critique."""
     return app_name.lower().strip() not in DANGEROUS_APPS_TO_CLOSE
 
 # --- VÉRIFICATION RÉSEAU ---
+_online_cache = None
+_online_cache_time = 0
+
 def is_online() -> bool:
-    """Vérifie si l'ordinateur a accès à Internet."""
+    """Vérifie si l'ordinateur a accès à Internet (avec cache de 10s)."""
+    global _online_cache, _online_cache_time
+    now = time.time()
+    if _online_cache is not None and (now - _online_cache_time) < 10:
+        return _online_cache
     try:
         socket.create_connection(("8.8.8.8", 53), timeout=2)
-        return True
+        _online_cache = True
     except OSError:
-        return False
+        _online_cache = False
+    _online_cache_time = now
+    return _online_cache
 
 # --- SITES WEB ET NAVIGATEURS CONNUS ---
 KNOWN_WEBSITES = {
@@ -68,6 +93,9 @@ KNOWN_WEBSITES = {
     "amazon": "https://www.amazon.fr", "wikipedia": "https://fr.wikipedia.org",
     "chatgpt": "https://chat.openai.com", "github": "https://github.com",
     "steam": "https://store.steampowered.com", "epic": "https://store.epicgames.com",
+    "linkedin": "https://www.linkedin.com", "pinterest": "https://www.pinterest.com",
+    "snapchat": "https://web.snapchat.com", "zoom": "https://zoom.us",
+    "notion": "https://www.notion.so", "figma": "https://www.figma.com",
 }
 
 KNOWN_BROWSERS = {
@@ -129,16 +157,19 @@ def parse_command(user_input: str) -> tuple[str, str | None]:
     api_key = settings.get("gemini_api_key", "").strip()
     if api_key and is_online():
         logger.info("Parsing via Gemini intent...")
-        llm_intent = llm_brain.parse_with_llm(text)
-        intent = llm_intent.get("intent", "UNKNOWN")
-        target = llm_intent.get("target", text)
-        
-        if intent == "SYSTEM_OPEN": return ("open", target)
-        if intent == "SYSTEM_CLOSE": return ("close", target)
-        if intent == "WEB_SEARCH": return ("search", target)
-        if intent == "ASK_AI": return ("discuss", text) # discussion pro/complexe
-        if intent == "WEB_CLOSE_ERROR": return ("close_site_error", target)
-        if intent == "TRANSLATE": return ("translate", target)
+        try:
+            llm_intent = llm_brain.parse_with_llm(text)
+            intent = llm_intent.get("intent", "UNKNOWN")
+            target = llm_intent.get("target", text)
+            
+            if intent == "SYSTEM_OPEN": return ("open", target)
+            if intent == "SYSTEM_CLOSE": return ("close", target)
+            if intent == "WEB_SEARCH": return ("search", target)
+            if intent == "ASK_AI": return ("discuss", text) # discussion pro/complexe
+            if intent == "WEB_CLOSE_ERROR": return ("close_site_error", target)
+            if intent == "TRANSLATE": return ("translate", target)
+        except Exception as e:
+            logger.error(f"Erreur LLM parsing: {e}")
     
     # 3. Fallback ultime 
     if len(text) > 8: return ("discuss", text)
@@ -182,6 +213,13 @@ def execute_command(user_input: str) -> str | None:
     
     handler = handlers.get(cmd)
     if handler: return handler()
+    
+    # Mode offline: si pas de réseau, informer l'utilisateur au lieu de crash
+    if not is_online():
+        msg = "Je suis hors-ligne. Je ne peux répondre qu'aux commandes locales (ouvrir, fermer, heure, système)."
+        speak(msg)
+        return msg
+    
     return _cmd_discuss(user_input)
 
 # --- ACTIONS ---
@@ -198,11 +236,17 @@ def _cmd_discuss(user_input: str) -> str:
         return "Clé API non trouvée. Veuillez aller dans les paramètres."
     
     _notify_ui("AURA réfléchit...")
-    ans = llm_brain.discuss_with_llm(user_input)
-    return ans
+    try:
+        ans = llm_brain.discuss_with_llm(user_input)
+        return ans
+    except Exception as e:
+        logger.error(f"Erreur discussion: {e}")
+        msg = "Désolé, une erreur est survenue pendant la réflexion."
+        speak(msg)
+        return msg
 
 def _cmd_translate(arg: str | None) -> str:
-    """Traduit du texte via Gemini."""
+    """Traduit du texte via Gemini. Supporte toutes les langues."""
     if not arg:
         msg = "Que voulez-vous que je traduise ?"
         speak(msg)
@@ -219,8 +263,14 @@ def _cmd_translate(arg: str | None) -> str:
         return "Clé API non trouvée."
     
     _notify_ui("AURA traduit...")
-    result = llm_brain.translate_with_llm(arg)
-    return result
+    try:
+        result = llm_brain.translate_with_llm(arg)
+        return result
+    except Exception as e:
+        logger.error(f"Erreur traduction: {e}")
+        msg = "Désolé, la traduction a échoué."
+        speak(msg)
+        return msg
 
 def _cmd_open(arg: str | None) -> str:
     if not arg: return "Rien à ouvrir."
@@ -234,21 +284,32 @@ def _cmd_open(arg: str | None) -> str:
                     if s in site_str:
                         browser_res = search_apps(browser, 1)
                         if browser_res:
-                            subprocess.Popen([browser_res[0][1], url])
-                            speak(f"J'ouvre {s} sur {browser}.")
-                            return f"Ouverture {s} sur {browser}"
+                            try:
+                                subprocess.Popen([browser_res[0][1], url])
+                                speak(f"J'ouvre {s} sur {browser}.")
+                                return f"Ouverture {s} sur {browser}"
+                            except Exception as e:
+                                logger.error(f"Erreur ouverture navigateur: {e}")
     
     # 2. Chercher D'ABORD une application locale (ex: "Spotify" installé physiquement)
     results = search_apps(arg, max_results=2)
     if results and results[0][2] > 0.6:
         best_name, best_path, score = results[0]
         try:
-            os.startfile(best_path)
-            increment_usage(best_name)
-            msg = f"Je lance {best_name}."
-            speak(msg)
-            return msg
+            # Vérifier que le chemin existe avant de lancer
+            if not os.path.isfile(best_path):
+                logger.warning(f"Chemin introuvable: {best_path}")
+            else:
+                os.startfile(best_path)
+                increment_usage(best_name)
+                msg = f"Je lance {best_name}."
+                speak(msg)
+                return msg
+        except OSError as e:
+            logger.error(f"Erreur lancement OS: {e}")
+            return f"Erreur lancement: {e}"
         except Exception as e:
+            logger.error(f"Erreur lancement: {e}")
             return f"Erreur lancement: {e}"
             
     # 3. Si non trouvé en local, est-ce un site connu ? (ex: "Spotify" web)
@@ -262,13 +323,20 @@ def _cmd_open(arg: str | None) -> str:
             # Fallback sur Opera s'il est dispo, sinon navigateur par défaut
             browser_res = search_apps("opera", 1)
             if browser_res:
-                subprocess.Popen([browser_res[0][1], url])
-                speak(f"Je n'ai pas trouvé {site} sur le PC. Je l'ouvre sur Opera.")
-                return f"Site {site} ouvert via Opera."
-            else:
+                try:
+                    subprocess.Popen([browser_res[0][1], url])
+                    speak(f"Je n'ai pas trouvé {site} sur le PC. Je l'ouvre sur Opera.")
+                    return f"Site {site} ouvert via Opera."
+                except Exception as e:
+                    logger.error(f"Erreur ouverture Opera: {e}")
+            
+            try:
                 webbrowser.open(url)
                 speak(f"Je n'ai pas trouvé {site} sur le PC. Je l'ouvre dans votre navigateur.")
                 return f"Site {site} ouvert."
+            except Exception as e:
+                logger.error(f"Erreur ouverture navigateur: {e}")
+                return f"Erreur: {e}"
             
     # 4. Inconnu local et web, fallback sur le navigateur (recherche Google)
     return _cmd_search(arg)
@@ -299,12 +367,19 @@ def _cmd_close(app_name: str | None) -> str:
     # Try kill exact and variants
     for exe in k_exe + [f"{app_low}.exe", app_low]:
         try:
-            res = subprocess.run(["taskkill", "/IM", exe, "/F"], capture_output=True, text=True, timeout=3)
+            res = subprocess.run(
+                ["taskkill", "/IM", exe, "/F"],
+                capture_output=True, text=True, timeout=5,
+                creationflags=subprocess.CREATE_NO_WINDOW
+            )
             if res.returncode == 0:
                 msg = f"J'ai fermé {app_name}."
                 speak(msg)
                 return msg
-        except: pass
+        except subprocess.TimeoutExpired:
+            logger.warning(f"Timeout lors de la fermeture de {exe}")
+        except Exception as e:
+            logger.warning(f"Erreur fermeture {exe}: {e}")
         
     msg = f"Impossible de fermer {app_name}. L'application n'est peut-être pas ouverte."
     speak(msg)
@@ -323,7 +398,10 @@ def _cmd_search(query: str | None) -> str:
         return msg
     search_url = f"https://www.google.com/search?q={urllib.parse.quote(query)}"
     speak(f"Voici ce que j'ai trouvé sur Internet pour {query}.")
-    webbrowser.open(search_url)
+    try:
+        webbrowser.open(search_url)
+    except Exception as e:
+        logger.error(f"Erreur ouverture recherche: {e}")
     return "Recherche effectuée."
 
 def _cmd_settings() -> str:
@@ -331,7 +409,10 @@ def _cmd_settings() -> str:
     if _settings_callback:
         _settings_callback()
     else:
-        open_settings()
+        try:
+            open_settings()
+        except Exception as e:
+            logger.error(f"Erreur ouverture paramètres: {e}")
     return "Paramètres ouverts."
 
 def _cmd_time() -> str:
@@ -371,6 +452,9 @@ def _cmd_system_info() -> str:
         
     except ImportError:
         info_lines.append("(Installez psutil pour plus de détails)")
+    except Exception as e:
+        logger.error(f"Erreur système info: {e}")
+        info_lines.append(f"(Erreur: {e})")
     
     result = "\n".join(info_lines)
     # Version vocale simplifiée
@@ -384,7 +468,7 @@ def _cmd_help() -> str:
 • "Ouvre [app/site]" — Lance une application ou un site
 • "Ferme [app]" — Ferme une application
 • "Cherche [sujet]" — Recherche sur Internet
-• "Traduis [texte]" — Traduit du texte
+• "Traduis [texte] en [langue]" — Traduit dans n'importe quelle langue
 • "Heure" — Annonce l'heure actuelle
 • "Système" — Affiche l'état du PC (CPU, RAM, Batterie)
 • "Paramètres" — Ouvre les réglages
@@ -392,7 +476,7 @@ def _cmd_help() -> str:
 • "[Question libre]" — Pose une question à l'IA
 
 💡 Raccourcis : F9 (mode furtif), Ctrl+Espace+A (barre), Ctrl+Espace+S (paramètres)"""
-    speak("Voici ce que je peux faire. Ouvrir des applications, fermer des programmes, chercher sur internet, traduire du texte, donner l'heure, afficher l'état du PC, et répondre à toutes vos questions.")
+    speak("Voici ce que je peux faire. Ouvrir des applications, fermer des programmes, chercher sur internet, traduire dans n'importe quelle langue, donner l'heure, afficher l'état du PC, et répondre à toutes vos questions.")
     return help_text
 
 def _cmd_exit() -> str:

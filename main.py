@@ -1,9 +1,8 @@
 # =============================================================================
-# main.py — Point d'entrée d'AURA V3 (Furtif & Intelligent)
+# main.py — Point d'entrée d'AURA V3.1 (Furtif & Intelligent)
 # =============================================================================
-# V3: Plus de Spotlight UI obligatoire. AURA tourne en fond, écoute 
-# le wake word "AURA", ou réagit à la touche furtive "F9" configurée.
-# Inclut l'accès aux paramètres depuis la barre des tâches.
+# V3.1: UI Siri-inspired, personnalisation complète, sécurité renforcée,
+# traduction multi-langue, mode offline, admin access.
 # =============================================================================
 
 import sys
@@ -14,7 +13,7 @@ import traceback
 
 def main():
     logger.info("=" * 50)
-    logger.info("AURA V3 — Mode Discret & IA")
+    logger.info("AURA V3.1 — Mode Discret & IA")
     logger.info("=" * 50)
     
     # ------------------------------------------------------------------
@@ -108,9 +107,18 @@ def main():
             # Reconfigurer Gemini si la clé API a changé
             llm_brain._configure_gemini()
         
+        def reload_theme():
+            """Recharge le thème UI après changement dans les settings."""
+            try:
+                app.reload_theme()
+                logger.info("Thème UI rechargé.")
+            except Exception as e:
+                logger.warning(f"Erreur rechargement thème: {e}")
+        
         # Rendre accessible depuis settings_ui
         import builtins
         builtins._aura_update_stealth_hotkey = update_stealth_hotkey
+        builtins._aura_reload_theme = reload_theme
         
         keyboard.add_hotkey(stealth_key, _on_stealth_hotkey, suppress=True)
         keyboard.add_hotkey(ui_key, _on_ui_hotkey, suppress=True)
@@ -148,7 +156,7 @@ def main():
             stop_tts()
             keyboard.unhook_all()
         except: pass
-        logger.info("AURA V3 éteint.")
+        logger.info("AURA V3.1 éteint.")
 
 
 if __name__ == "__main__":

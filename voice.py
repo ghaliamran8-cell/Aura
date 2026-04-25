@@ -7,6 +7,7 @@
 # - Mode d'écoute PERMANENTE avec mot-clé "AURA" (wake word)
 # - Bip sonore + feedback visuel pour l'écoute
 # - Adaptation multilingue FR/EN automatique avec fallback
+# - Mode offline : fallback sur pyttsx3 si pas de réseau
 # =============================================================================
 
 import threading
@@ -79,7 +80,7 @@ async def _edge_tts_speak(text: str) -> None:
             pass
     except Exception as e:
         logger.error(f"Erreur edge_tts : {e}")
-        # Fallback sur pyttsx3 si edge_tts échoue
+        # Fallback sur pyttsx3 si edge_tts échoue (mode offline)
         _pyttsx3_speak(text)
 
 
@@ -107,10 +108,13 @@ def _play_audio_file(filepath: str) -> None:
             # Dernier fallback : pyttsx3
             logger.warning("Ni pygame ni pydub disponibles — fallback pyttsx3")
             _pyttsx3_speak("...")
+    except Exception as e:
+        logger.error(f"Erreur lecture audio : {e}")
+        _pyttsx3_speak("...")
 
 
 def _pyttsx3_speak(text: str) -> None:
-    """Fallback TTS avec pyttsx3 (voix robotique mais fiable)."""
+    """Fallback TTS avec pyttsx3 (voix robotique mais fiable, fonctionne OFFLINE)."""
     if not HAS_PYTTSX3:
         return
     try:
@@ -152,7 +156,12 @@ def _tts_worker():
                 break
             
             if HAS_EDGE_TTS:
-                loop.run_until_complete(_edge_tts_speak(text))
+                try:
+                    loop.run_until_complete(_edge_tts_speak(text))
+                except Exception as e:
+                    # edge_tts failed (likely offline) — fallback to pyttsx3
+                    logger.warning(f"edge_tts échoué, fallback pyttsx3: {e}")
+                    _pyttsx3_speak(text)
             else:
                 _pyttsx3_speak(text)
             
@@ -179,6 +188,7 @@ def speak(text: str) -> None:
     """
     Prononce un texte avec une voix neuronale humaine.
     Asynchrone via file d'attente — ne bloque pas le thread appelant.
+    Si offline, utilise automatiquement pyttsx3 comme fallback.
     """
     _ensure_tts_thread()
     _tts_queue.put(text)
@@ -215,6 +225,7 @@ _recognizer.pause_threshold = 0.8      # Moins de pause avant fin de capture
 _recognizer.non_speaking_duration = 0.5
 
 # Locales supportées pour le STT (fallback multilingue)
+# FR en premier pour comprendre le français quand on parle français
 STT_LOCALES = {
     "fr": ["fr-FR", "en-US"],  # Essaye FR d'abord, puis EN
     "en": ["en-US", "fr-FR"],  # Essaye EN d'abord, puis FR
@@ -310,12 +321,16 @@ _continuous_thread = None
 _command_callback = None
 
 # Variantes du wake word (pour tolérer les erreurs de reconnaissance)
-# Étendu avec plus de variantes françaises et anglaises
+# Étendu avec plus de variantes françaises, anglaises et phonétiques
 WAKE_WORDS = [
     "aura", "ora", "aurora", "or a",
     "hey aura", "ok aura", "dis aura", "salut aura",
     "hé aura", "eh aura", "aura s'il te plaît",
     "hi aura", "yo aura", "hey ora",
+    # Variantes phonétiques françaises (erreurs courantes du STT)
+    "or ah", "auras", "horra", "aurat", "laura",
+    "eau ra", "au ra", "oh ra",
+    "dis ora", "hé ora", "salut ora",
 ]
 
 

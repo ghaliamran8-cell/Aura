@@ -1,0 +1,46 @@
+# ===========================================
+# AURA — .gitignore
+# ===========================================
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+dist/
+build/
+*.egg
+*.spec
+
+# Virtual environment
+venv/
+.venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# AURA — Données sensibles et locales
+settings.json
+history.json
+index.json
+aura.log
+*.log
+
+# Build artifacts
+*.exe
+*.ico
+
+# OS files
+Thumbs.db
+.DS_Store
+desktop.ini
+
+# Temp
+*.tmp
+*.bak
